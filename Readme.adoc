@@ -1,0 +1,24 @@
+Ansible libvirt
+===============
+
+A stash of Ansible roles that allow you to control libvirt virtual machines
+
+Requirements
+------------
+
+* Ansible
+* Host capable of running libvirt
+
+Content Roles
+-------------
+
+* host/provision - install everything required on the host
+* images/trusty - download and prepare a Ubuntu 14.04 trusty cloud image
+* network/bridge - configure a libvirt network for nat bridge mode
+* domain/create - create and start a new virtual machine
+* domain/list - list virtual machines
+* domain/kill - stop and undefine a virtual machine
+* domain/port_forward - forward certain network ports from the host to a domain
+* facts/new - create facts for a new virtual machine
+* facts/store - save facts to a virtual machine
+* facts/delete - remove facts about a virtual machine

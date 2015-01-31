@@ -1,0 +1,87 @@
+---
+- name: copy base image
+  command: cp {{ libvirt_vm_base_img }} {{ libvirt_vm_machine_id }}.img
+  args:
+    chdir: "{{ libvirt_images_path }}"
+    creates: "{{ libvirt_images_path }}/{{ libvirt_vm_machine_id }}.img"
+
+- name: resize image
+  command: "qemu-img resize {{ libvirt_vm_machine_id }}.img {{ libvirt_vm_disk_size }}"
+  args:
+    chdir: "{{ libvirt_images_path }}"
+  when: libvirt_vm_disk_size is defined
+
+- name: create cloud-config
+  template:
+    dest: "{{ libvirt_images_path }}/{{ libvirt_vm_machine_id }}.cloud-config"
+    src: "cloud-config.yml.j2"
+
+- name: create cloud-config.img
+  command: "cloud-localds {{ libvirt_vm_machine_id }}.cloud-config.img {{ libvirt_vm_machine_id }}.cloud-config"
+  args:
+    chdir: "{{ libvirt_images_path }}"
+    creates: "{{ libvirt_images_path }}/{{ libvirt_vm_machine_id }}.cloud-config.img"
+
+- name: create machine.xml
+  template:
+    dest: "/tmp/{{ libvirt_vm_machine_id }}.xml"
+    src: "machine.xml.j2"
+
+- name: install machine
+  command: "virsh define /tmp/{{ libvirt_vm_machine_id }}.xml"
+
+- name: start machine
+  command: "virsh start {{ libvirt_vm_machine_id }}"
+
+- name: extract mac address
+  shell: >
+    virsh dumpxml {{ libvirt_vm_machine_id }}
+    | grep 'mac address'
+    | cut -f 2 -d "'"
+  register: extract_mac_result
+
+- name: wait for ip
+  shell: |
+    until arp -an | grep -q -F {{ extract_mac_result.stdout }}; do
+      sleep 1
+    done
+    sleep 1 # give time for ssh to start
+    arp -an | grep -F {{ extract_mac_result.stdout }} | cut -f 2 -d "(" | cut -f 1 -d ")"
+  register: extract_ip_result
+
+- name: autostart machine
+  command: "virsh autostart {{ libvirt_vm_machine_id }}"
+
+- name: extract facts
+  set_fact:
+    libvirt_vm_ip: "{{ extract_ip_result.stdout }}"
+    libvirt_vm_mac: "{{ extract_mac_result.stdout }}"
+
+- name: create host hooks directory
+  file:
+    dest: "{{ libvirt_host_qemu_machine_hooks_folder }}/{{ libvirt_vm_machine_id }}"
+    state: directory
+
+- name: setup hook facts
+  set_fact:
+    protocol: tcp
+    source_ip: "{{ libvirt_host_ip | default(ansible_default_ipv4.address, true) }}"
+    source_port: "{{ libvirt_vm_ssh_port }}"
+    destination_ip: "{{ libvirt_vm_ip }}"
+    destination_port: 22
+
+- name: create ssh forward hook
+  template:
+    dest: "{{ libvirt_host_qemu_machine_hooks_folder }}/{{ libvirt_vm_machine_id }}/{{ source_ip }}-{{ source_port }}-tcp"
+    src: iptables-port-nat.sh.j2
+    mode: "0744"
+
+- name: run the hook
+  command: >
+    {{ libvirt_host_qemu_machine_hooks_folder }}/{{ libvirt_vm_machine_id }}/{{ source_ip }}-{{ source_port }}-tcp
+    start
+
+- name: wait for ssh
+  wait_for:
+    port: "{{ destination_port }}"
+    timeout: 60 # seconds

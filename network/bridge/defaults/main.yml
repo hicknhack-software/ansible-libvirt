@@ -1,0 +1,16 @@
+---
+libvirt_bridge_path: '/etc/libvirt/ansible/networks'
+
+libvirt_bridges:
+- name: default
+  forward: nat
+  bridge: virbr0
+  domain: vm
+  ip_address: 192.168.122.1
+  ip_netmask: 255.255.255.0
+  dhcp_start: 192.168.122.2
+  dhcp_end:   192.168.122.253
+  #ipv6:
+  ipv6_prefix: 64
+  #dhcp6_start:
+  #dhcp6_end:

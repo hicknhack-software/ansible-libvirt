@@ -1,0 +1,30 @@
+#!/bin/bash
+
+set -e
+set -u
+
+iptables='/sbin/iptables'
+
+protocol="{{ protocol }}"
+source_ip="{{ source_ip }}"
+source_port="{{ source_port }}"
+destination_ip="{{ destination_ip}}"
+destination_port="{{ destination_port }}"
+
+update() {
+  action="$1"
+
+  `${iptables} -t nat ${action} PREROUTING -d ${source_ip} -p ${protocol} -m ${protocol} --dport ${source_port} -j DNAT --to-destination ${destination_ip}:${destination_port}`
+  `${iptables} ${action} FORWARD -d ${destination_ip} -p ${protocol} -m state --state NEW --dport ${destination_port} -j ACCEPT`
+}
+
+task="$1"
+
+case "${task}" in
+        start)
+                update " -I "
+        ;;
+        stopped)
+                update " -D "
+        ;;
+esac

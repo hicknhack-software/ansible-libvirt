@@ -1,0 +1,24 @@
+#!/bin/bash
+# {{ ansible_managed }}
+
+set -e
+set -u
+
+domain_name="$1"
+domain_task="$2"
+
+machine_hooks_folder="{{ libvirt_host_qemu_machine_hooks_folder }}"
+network_hook="{{ libvirt_host_qemu_network_hook }}"
+
+#/usr/bin/logger qemu_hook called $1 $2
+
+if [ -d "${machine_hooks_folder}/${domain_name}" ]; then
+  for file in `find ${machine_hooks_folder}/${domain_name}/* -maxdepth 0 -type f -executable`; do
+    /bin/bash $file ${domain_task}
+  done
+fi
+
+if [ "$domain_task" = start ] && [ -x "${network_hook}" ]; then
+  /bin/bash ${network_hook} || true
+  exit 0
+fi

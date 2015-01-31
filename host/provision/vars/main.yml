@@ -1,0 +1,6 @@
+---
+libvirt_host_qemu_machine_hooks_folder: '/etc/libvirt/qemu_machine_hooks'
+libvirt_host_qemu_hook: '/etc/libvirt/hooks/qemu'
+libvirt_host_qemu_network_hook: '/etc/libvirt/qemu_network_hook'
+
+network_interface_up_hooks_path: "/etc/network/if-up.d"

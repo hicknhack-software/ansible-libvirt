@@ -1,0 +1,47 @@
+---
+- name: create directory
+  file:
+    path: "{{ libvirt_bridge_path }}"
+    state: directory
+
+- name: create config
+  template:
+    src: config.xml.j2
+    dest: "{{ libvirt_bridge_path }}/{{ item.name }}.xml"
+  with_items: libvirt_bridges
+  register: configure_result
+
+- name: check states
+  command: virsh net-info {{ item.item.name }}
+  failed_when: no
+  changed_when: no
+  register: check_states_result
+  with_items: configure_result.results
+
+- name: stop and undefine existing
+  shell: >
+    virsh net-destroy {{ item[0].item.name }};
+    virsh net-undefine {{ item[0].item.name }}
+  when: (item[1].rc == 0) and (item[0].changed)
+  with_together:
+  - configure_result.results
+  - check_states_result.results
+
+- name: define and start
+  shell: >
+    virsh net-define {{ libvirt_bridge_path }}/{{ item.item.name }}.xml &&
+    virsh net-autostart {{ item.item.name }} &&
+    virsh net-start {{ item.item.name }}
+  when: item.changed
+  with_items: configure_result.results
+
+- name: add dnsmasq for host
+  lineinfile:
+    dest: "{{ libvirt_qemu_resolv_conf_head }}"
+    regexp: "^nameserver"
+    line: "nameserver {{ (libvirt_bridges | first).ip_address }}"
+  register: nameserver_result
+
+- name: call resolvconf
+  command: "resolvconf -u"
+  when: nameserver_result.changed

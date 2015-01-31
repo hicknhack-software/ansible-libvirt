@@ -1,0 +1,11 @@
+[
+{% for item in port_forwards %}
+  {
+    'protocol': "{{ item.protocol | default('tcp', true) }}",
+    'source_ip': "{{ item.host_ip | default(hostvars[libvirt_hostname].ansible_default_ipv4.address, true) }}",
+    'source_port': "{{ item.host }}",
+    'destination_ip': "{{ item.guest_ip | default(ansible_default_ipv4.address, true) }}",
+    'destination_port': "{{ item.guest }}"
+  }{{ '' if loop.last else ',' }}
+{% endfor %}
+]

@@ -1,0 +1,32 @@
+---
+- name: initiate shutdown
+  shell: 'virsh shutdown "{{ item }}" || true'
+  when: item in libvirt_machines
+  with_items: libvirt_vm_machine_ids
+
+- name: wait for shutdown
+  shell: |
+    while virsh list | grep -q -F "{{ item }}"; do
+      sleep 2
+    done
+  when: item in libvirt_machines
+  with_items: libvirt_vm_machine_ids
+
+- name: undefine machine
+  command: 'virsh undefine "{{ item }}"'
+  when: item in libvirt_machines
+  with_items: libvirt_vm_machine_ids
+
+- name: delete images
+  shell: 'rm {{ item }}*'
+  args:
+    chdir: "{{ libvirt_images_path }}"
+    removes: "{{ libvirt_images_path }}/{{ item }}.img"
+  when: item in libvirt_machines
+  with_items: libvirt_vm_machine_ids
+
+- name: delete hooks
+  file:
+    dest: "{{ libvirt_host_qemu_machine_hooks_folder }}/{{ item }}"
+    state: absent
+  with_items: libvirt_vm_machine_ids

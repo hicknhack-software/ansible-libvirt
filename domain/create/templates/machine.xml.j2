@@ -1,0 +1,36 @@
+<!-- {{ ansible_managed }} -->
+<domain type='kvm'>
+  <name>{{ libvirt_vm_machine_id }}</name>
+  <memory>{{ libvirt_vm_memory }}</memory>
+  <os>
+    <type arch='x86_64'>hvm</type>
+    <boot dev="hd" />
+  </os>
+  <features>
+    <acpi/>
+    <apic/>
+    <pae/>
+  </features>
+  <vcpu placement="static">{{ libvirt_vm_cores }}</vcpu>
+  <devices>
+    <disk type='file' device='disk'>
+      <driver type='qcow2' cache='writeback'/>
+      <source file='{{ libvirt_images_path }}/{{ libvirt_vm_machine_id }}.img'/>
+      <target dev='vda' bus='virtio'/>
+    </disk>
+    <disk type='file' device='disk'>
+      <source file='{{ libvirt_images_path }}/{{ libvirt_vm_machine_id }}.cloud-config.img'/>
+      <target dev='vdb' bus='virtio'/>
+    </disk>
+    <interface type='network'>
+      <source network='{{ libvirt_vm_network }}'/>
+      <model type='virtio'/>
+    </interface>
+    <serial type='pty'>
+      <target port='0'/>
+    </serial>
+    <console type='pty'>
+      <target type='serial' port='0'/>
+    </console>
+  </devices>
+</domain>

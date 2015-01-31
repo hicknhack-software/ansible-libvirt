@@ -1,0 +1,14 @@
+---
+- name: list machines
+  command: virsh list --all
+  changed_when: no
+  register: virsh_list_result
+
+- name: extract machines
+  set_fact:
+    libvirt_machines: >
+      [
+      {% for x in virsh_list_result.stdout_lines[2:] %}
+      '{{ x.split()[1] }}'{{ ',' if not loop.last else '' }}
+      {% endfor %}
+      ]

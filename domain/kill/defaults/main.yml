@@ -1,0 +1,5 @@
+---
+libvirt_images_path: "/var/lib/libvirt/images"
+
+libvirt_machines: [] # output of libvirt/list_vms
+libvirt_vm_machine_ids: [] # required!

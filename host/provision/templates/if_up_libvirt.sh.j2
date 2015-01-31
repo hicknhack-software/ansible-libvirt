@@ -1,0 +1,5 @@
+#!/bin/bash
+# {{ ansible_managed }}
+{% for line in network_up_hooks -%}
+{{ line }}
+{% endfor -%}

@@ -1,0 +1,18 @@
+---
+libvirt_images_path: "/var/lib/libvirt/images"
+libvirt_vm_base_img: "trusty-server-cloudimg-amd64-disk1.img"
+
+libvirt_vm_machine_id: # required!
+libvirt_vm_memory: 1048576 # in bytes
+libvirt_vm_cores: 1
+libvirt_vm_network: default
+# libvirt_vm_disk_size: "+8G" # use this to change disk size
+
+# see https://bazaar.launchpad.net/~cloud-init-dev/cloud-init/trunk/view/head:/doc/examples/cloud-config-user-groups.txt
+libvirt_vm_users:
+  - name: ubuntu
+    gecos: Ubuntu
+    ssh-authorized-keys: [] # required!
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: [adm, audio, cdrom, dialout, floppy, video, plugdev, dip, netdev]

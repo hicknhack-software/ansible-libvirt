@@ -1,0 +1,10 @@
+---
+libvirt_hostname: # required
+manage_name: 'extra'
+port_forwards:
+- guest: # required port of guest
+  host: # required port of host
+  protocol: 'tcp' # default
+  host_ip: # {{ hostvars[libvirt_hostname].ansible_default_ipv4 }}
+  host_device: # 'eth0'
+  guest_ip: # {{ ansible_default_ipv4 }}

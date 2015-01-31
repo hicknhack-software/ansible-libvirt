@@ -1,0 +1,25 @@
+<!-- {{ ansible_managed }} -->
+<network>
+  <name>{{ item.name | default('default', true) }}</name>
+  <forward mode='{{ item.forward }}'/>
+  <bridge name='{{ item.bridge }}' stp='on' delay='0' />
+{% if item.domain is defined %}
+  <domain name='{{ item.domain }}'/>
+{% endif %}
+  <ip address='{{ item.ip_address }}' netmask='{{ item.ip_netmask }}'>
+{% if item.dhcp_start is defined %}
+    <dhcp>
+      <range start='{{ item.dhcp_start }}' end='{{ item.dhcp_end }}' />
+    </dhcp>
+{% endif %}
+  </ip>
+{% if item.ipv6 is defined %}
+  <ip family='ipv6' address='{{ item.ipv6 }}' prefix='{{ ipv6_prefix }}'>
+{% if item.dhcp6_start is defined %}
+    <dhcp>
+      <range start='{{ item.dhcp6_start }}' end='{{ item.dhcp6_end }}' />
+    </dhcp>
+{% endif %}
+  </ip>
+{% endif %}
+</network>

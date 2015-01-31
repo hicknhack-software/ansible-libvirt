@@ -1,0 +1,14 @@
+---
+libvirt_host_packages:
+- qemu-kvm
+- libvirt-bin
+- virtinst
+- python-libvirt # allow ansible management
+- cloud-image-utils # used to convert images
+- uuid-runtime # generate machine uuids
+- python-configparser # required for ini_file
+
+libvirt_hostname: libvirt-host
+
+network_up_hooks:
+- 'echo 1 > /proc/sys/net/ipv4/conf/eth0/proxy_arp'

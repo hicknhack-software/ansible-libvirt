@@ -1,0 +1,6 @@
+[
+{% for item in real_port_forwards %}
+  "{{ manage_name }}_{{ item.source_ip }}-{{ item.source_port }}-{{ item.protocol }}"
+  {{ '' if loop.last else ',' }}
+{% endfor %}
+]
