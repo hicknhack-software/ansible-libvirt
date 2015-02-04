@@ -1,0 +1,14 @@
+---
+- name: list all domain names
+  command: virsh list --all --name
+  changed_when: no
+  register: libvirt_list_all_result
+
+- name: extract all domain names
+  set_fact:
+    libvirt_all_domains: "{{ libvirt_list_all_result.stdout_lines }}"
+
+- name: undefine machine
+  command: 'virsh undefine "{{ item }}"'
+  when: item in libvirt_all_domains
+  with_items: libvirt_domain_names

@@ -1,0 +1,16 @@
+---
+- name: create host hooks directory
+  file:
+    dest: "{{ libvirt_host_qemu_machine_hooks_folder }}/{{ libvirt_result_domain_name }}"
+    state: directory
+
+- name: create ssh forward hook
+  template:
+    dest: "{{ libvirt_host_qemu_machine_hooks_folder }}/{{ libvirt_result_domain_name }}/{{ source_ip }}-{{ source_port }}-tcp"
+    src: iptables-port-nat.sh.j2
+    mode: "0744"
+
+- name: run the hook
+  command: >
+    {{ libvirt_host_qemu_machine_hooks_folder }}/{{ libvirt_result_domain_name }}/{{ source_ip }}-{{ source_port }}-tcp
+    start

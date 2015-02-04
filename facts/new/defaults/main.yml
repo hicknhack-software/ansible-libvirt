@@ -1,3 +1,0 @@
----
-libvirt_ssh_base_port: 22000
-libvirt_vm_machine_id: '' # will use uuidgen if empty

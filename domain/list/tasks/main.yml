@@ -1,14 +1,15 @@
 ---
-- name: list machines
-  command: virsh list --all
+- name: running
+  command: virsh list --name
   changed_when: no
-  register: virsh_list_result
+  register: virsh_list_running_result
 
-- name: extract machines
+- name: all
+  command: virsh list --all --name
+  changed_when: no
+  register: virsh_list_all_result
+
+- name: extract facts
   set_fact:
-    libvirt_machines: >
-      [
-      {% for x in virsh_list_result.stdout_lines[2:] %}
-      '{{ x.split()[1] }}'{{ ',' if not loop.last else '' }}
-      {% endfor %}
-      ]
+    libvirt_running_domains: "{{ virsh_list_running_result.stdout_lines }}"
+    libvirt_all_domains: "{{ virsh_list_all_result.stdout_lines }}"

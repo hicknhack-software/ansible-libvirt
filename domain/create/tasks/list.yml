@@ -1,0 +1,9 @@
+---
+- name: list | all domains
+  command: virsh list --all --name
+  changed_when: no
+  register: libvirt_list_all_result
+
+- name: list | extract
+  set_fact:
+    libvirt_all_domains: "{{ libvirt_list_all_result.stdout_lines }}"

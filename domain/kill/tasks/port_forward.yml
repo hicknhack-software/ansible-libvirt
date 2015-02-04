@@ -1,0 +1,8 @@
+---
+# port forward are automatically shutdown on domain shutdown!
+# the only thing left is to remove the scripts
+- name: delete hooks
+  file:
+    dest: "{{ libvirt_host_qemu_machine_hooks_folder }}/{{ item }}"
+    state: absent
+  with_items: libvirt_domain_names

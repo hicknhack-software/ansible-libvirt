@@ -1,0 +1,13 @@
+---
+- name: autostart | list domains
+  command: virsh list --autostart --name
+  changed_when: no
+  register: libvirt_list_autostart_result
+
+- name: autostart | enable
+  command: "virsh autostart {{ libvirt_result_domain_name }}"
+  when: libvirt_autostart and (libvirt_result_domain_name not in libvirt_list_autostart_result.stdout_lines)
+
+- name: autostart | disable
+  command: "virsh autostart {{ libvirt_result_domain_name }} --disable"
+  when: not libvirt_autostart and (libvirt_result_domain_name in libvirt_list_autostart_result.stdout_lines)

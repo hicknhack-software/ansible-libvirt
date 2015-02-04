@@ -1,0 +1,32 @@
+---
+- name: cloud_image | copy base image
+  command: >
+    cp
+    {{ libvirt_cloud_image }}
+    {{ libvirt_result_domain_name }}.img
+  args:
+    chdir: "{{ libvirt_images_path }}"
+    creates: "{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.img"
+
+- name: cloud_image | resize image
+  command: >
+    qemu-img resize
+    {{ libvirt_result_domain_name }}.img
+    {{ libvirt_vm_disk_size }}
+  args:
+    chdir: "{{ libvirt_images_path }}"
+  when: libvirt_vm_disk_size is defined
+
+- name: cloud_image | create cloud-config
+  template:
+    dest: "{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.cloud-config"
+    src: "cloud-config.yml.j2"
+
+- name: cloud_image | create cloud-config.img
+  command: >
+    cloud-localds
+    {{ libvirt_result_domain_name }}.cloud-config.img
+    {{ libvirt_result_domain_name }}.cloud-config
+  args:
+    chdir: "{{ libvirt_images_path }}"
+    creates: "{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.cloud-config.img"

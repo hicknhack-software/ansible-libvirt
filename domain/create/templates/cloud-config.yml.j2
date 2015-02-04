@@ -1,5 +1,5 @@
 #cloud-config
 # {{ ansible_managed }}
-hostname: {{ libvirt_vm_machine_id }}
+hostname: {{ libvirt_result_domain_name }}
 users:
 {{ libvirt_vm_users | to_nice_yaml }}

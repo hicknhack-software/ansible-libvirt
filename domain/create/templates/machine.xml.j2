@@ -1,36 +1,69 @@
 <!-- {{ ansible_managed }} -->
 <domain type='kvm'>
-  <name>{{ libvirt_vm_machine_id }}</name>
-  <memory>{{ libvirt_vm_memory }}</memory>
+  <name>{{ libvirt_result_domain_name }}</name>
+{% if libvirt_domain_title %}
+  <title>{{ libvirt_domain_title }}</title>
+{% endif %}
+{% if libvirt_domain_description %}
+  <description>{{ libvirt_domain_description }}</description>
+{% endif %}
+  <memory unit='{{ libvirt_vm_memory
+    | regex_replace('^\\d+([a-zA-Z]*)$', '\\1')
+    | default('k', true) }}'>{{ libvirt_vm_memory
+      | regex_replace('^(\\d+).*$', '\\1')
+      | default('512', true) }}</memory>
   <os>
-    <type arch='x86_64'>hvm</type>
-    <boot dev="hd" />
+    <type
+      {%- if libvirt_os.type_arch is defined %} arch='{{ libvirt_os.type_arch }}'{% endif -%}
+      {%- if libvirt_os.type_machine is defined %} machine='{{ libvirt_os.type_machine }}'{% endif -%}
+      >{{ libvirt_os.type | default('hvm', true) }}</type>
+{% for boot in libvirt_os.boot | default(['hd'], true) %}
+    <boot dev="{{ boot }}" />
+{% endfor %}
   </os>
   <features>
-    <acpi/>
-    <apic/>
-    <pae/>
+{% for feature in libvirt_vm_features %}
+    <{{ feature }}/>
+{% endfor %}
   </features>
-  <vcpu placement="static">{{ libvirt_vm_cores }}</vcpu>
+  <vcpu placement="{{ libvirt_vm_vcpu_placement }}"{% if libvirt_vm_vcpu_cpuset %} cpuset="{{ libvirt_vm_vcpu_cpuset | join(',') }}"{% endif %}>{{ libvirt_vm_vcpu }}</vcpu>
+  <cpu match='{{ libvirt_vm_cpu.match | default('exact') }}' mode='{{ libvirt_vm_cpu.mode | default('custom') }}'>
+{% if libvirt_vm_cpu.model is defined or libvirt_vm_cpu.model_fallback is defined %}
+    <model fallback="{{ libvirt_vm_cpu.model_fallback | default('allow', true) }}">{{ libvirt_vm_cpu.model | default('') }}</model>
+{% endif %}
+{% if libvirt_vm_cpu.vendor is defined %}
+    <vendor>{{ libvirt_vm_cpu.vendor }}</vendor>
+{% endif %}
+{% if libvirt_vm_cpu.topology is defined %}
+    <topology sockets='{{ libvirt_vm_cpu.topology.sockets | default(1, true) }}' cores='{{ libvirt_vm_cpu.topology.cores | default(1, true) }}' threads='{{ libvirt_vm_cpu.topology.threads | default(1, true) }}'/>
+{% endif %}
+{% for feature in libvirt_vm_features %}
+    <feature policy='{{ (feature.policy if feature is mapping and feature.policy is defined else '') | default('require', true) }}' name='{{ feature.name if feature is mapping else feature }}' />
+{% endfor %}
+  </cpu>
   <devices>
     <disk type='file' device='disk'>
       <driver type='qcow2' cache='writeback'/>
-      <source file='{{ libvirt_images_path }}/{{ libvirt_vm_machine_id }}.img'/>
+      <source file='{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.img'/>
       <target dev='vda' bus='virtio'/>
     </disk>
     <disk type='file' device='disk'>
-      <source file='{{ libvirt_images_path }}/{{ libvirt_vm_machine_id }}.cloud-config.img'/>
+      <source file='{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.cloud-config.img'/>
       <target dev='vdb' bus='virtio'/>
     </disk>
+{% for network in libvirt_vm_networks | default([]) %}
     <interface type='network'>
-      <source network='{{ libvirt_vm_network }}'/>
+      <source network='{{ network }}'/>
       <model type='virtio'/>
     </interface>
+{% endfor %}
+{% if libvirt_vm_serial_console %}
     <serial type='pty'>
       <target port='0'/>
     </serial>
     <console type='pty'>
       <target type='serial' port='0'/>
     </console>
+{% endif %}
   </devices>
 </domain>

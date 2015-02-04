@@ -1,5 +1,6 @@
 ---
-libvirt_images_path: "/var/lib/libvirt/images"
+libvirt_domain_names: [] # required!
 
-libvirt_machines: [] # output of libvirt/list_vms
-libvirt_vm_machine_ids: [] # required!
+# configuration
+libvirt_images_path: "/var/lib/libvirt/images"
+ansible_facts_path: '/etc/ansible/facts.d' # path where local Ansible facts are stored & read

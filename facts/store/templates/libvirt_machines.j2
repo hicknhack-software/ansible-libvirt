@@ -1,6 +1,0 @@
-{
-{% for x in ([[libvirt_vm_machine_id, libvirt_vm_facts]]
-              + ((ansible_local | default({})).libvirt_machines | default({})).items()) %}
-{{ x[0] | to_nice_json }}:{{ x[1] | to_nice_json }}{{ '' if loop.last else ',' }}
-{% endfor %}
-}

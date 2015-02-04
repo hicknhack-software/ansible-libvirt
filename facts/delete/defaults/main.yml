@@ -1,4 +1,0 @@
----
-ansible_facts_path: '/etc/ansible/facts.d'
-
-libvirt_vm_machine_ids: [] # ids of machines whose facts should be removed

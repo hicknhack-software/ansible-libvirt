@@ -1,0 +1,22 @@
+---
+- name: mac_and_ip | extract mac address
+  shell: >
+    virsh dumpxml {{ libvirt_result_domain_name }}
+    | grep 'mac address'
+    | cut -f 2 -d "'"
+  changed_when: no
+  register: extract_mac_address_result
+
+- name: mac_and_ip | wait for dhcp ip address
+  shell: |
+    until arp -an | grep -q -F {{ extract_mac_address_result.stdout }}; do
+      sleep 1
+    done
+    arp -an | grep -F {{ extract_mac_address_result.stdout }} | cut -f 2 -d "(" | cut -f 1 -d ")"
+  changed_when: no
+  register: extract_ip_address_result
+
+- name: mac_and_ip | extract facts
+  set_fact:
+    libvirt_result_ip_address: "{{ extract_ip_address_result.stdout }}"
+    libvirt_result_mac_address: "{{ extract_mac_address_result.stdout }}"

@@ -1,0 +1,24 @@
+---
+- name: list running domain names
+  command: virsh list --name
+  changed_when: no
+  register: libvirt_list_result
+
+- name: extract running domain names
+  set_fact:
+    libvirt_running_domains: "{{ libvirt_list_result.stdout_lines }}"
+
+- name: initiate shutdown
+  command: >
+    virsh shutdown "{{ item }}"
+  when: item in libvirt_running_domains
+  with_items: libvirt_domain_names
+
+- name: wait for shutdown
+  shell: |
+    while virsh list | grep -q -F "{{ item }}"; do
+      sleep 2
+    done
+  changed_when: no
+  when: item in libvirt_running_domains
+  with_items: libvirt_domain_names

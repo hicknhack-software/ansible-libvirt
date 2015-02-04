@@ -1,0 +1,43 @@
+---
+- name: create facts folder
+  file:
+    path: "{{ ansible_facts_path }}"
+    state: directory
+    recurse: yes
+
+- name: store fact ssh_port
+  ini_file:
+    dest: "{{ ansible_facts_path }}/libvirt.fact"
+    section: "facts"
+    option: "ssh_port"
+    value: "{{ libvirt_result_ssh_port }}"
+  when: libvirt_result_ssh_port_generated | bool
+
+- name: prepare store domain facts
+  set_fact:
+    libvirt_result_domain_facts: >
+      {
+        {% for key, var in libvirt_domain_fact_template.iteritems() %}
+          u"{{ key }}": {% if var in vars -%}
+             {{ vars[var]
+                  if vars[var] is not string
+                  else
+                ('u"%s"' % vars[var])
+             }}{%- else -%}
+             {{ hostvars[inventory_hostname][var]
+                  if hostvars[inventory_hostname][var] is not string
+                  else
+                ('u"%s"' % hostvars[inventory_hostname][var])
+             }}{%- endif -%}
+          {{ '' if loop.last else ',' }}
+        {% endfor %}
+      }
+
+- name: store_facts | store
+  template:
+    dest: "{{ ansible_facts_path }}/libvirt_domains.fact"
+    src: libvirt_domains.j2
+
+- name: re-read facts
+  setup:
+    filter: ansible_local

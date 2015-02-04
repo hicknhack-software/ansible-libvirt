@@ -1,0 +1,7 @@
+---
+- name: delete images
+  shell: 'rm {{ item }}*'
+  args:
+    chdir: "{{ libvirt_images_path }}"
+    removes: "{{ libvirt_images_path }}/{{ item }}.img"
+  with_items: libvirt_domain_names

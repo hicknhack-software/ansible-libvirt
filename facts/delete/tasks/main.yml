@@ -1,6 +1,0 @@
----
-- name: store machines
-  template:
-    dest: "{{ ansible_facts_path }}/libvirt_machines.fact"
-    src: libvirt_machines.j2
-

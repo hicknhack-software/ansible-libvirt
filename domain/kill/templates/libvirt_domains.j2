@@ -1,0 +1,6 @@
+{
+{% for x in ((ansible_local | default({})).libvirt_domains | default({})).items()
+         if not x[0] in libvirt_domain_names %}
+{{ x[0] | to_nice_json }}:{{ x[1] | to_nice_json }}{{ '' if loop.last else ',' }}
+{% endfor %}
+}
