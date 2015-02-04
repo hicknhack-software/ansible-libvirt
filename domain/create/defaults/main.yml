@@ -98,8 +98,11 @@ libvirt_images_path: "/var/lib/libvirt/images" # path on the host, where all the
 libvirt_host_ip_address: # host ip address where ssh_ports are made available (default: ansible_default_ipv4.address)
 libvirt_ssh_base_port: 22000 # first host port for forwards to VM ssh
 libvirt_ssh_guest_port: 22 # guest port for ssh
-libvirt_domain_fact_template: # template for the stored facts hash (values are variable/fact names)
-  ssh_port: libvirt_result_ssh_port
-  groups: libvirt_domain_groups
+# template for the stored facts hash (values are variable/fact names)
+libvirt_domain_fact_template: >
+  {
+    u"ssh_port": {{ libvirt_result_ssh_port }},
+    u"groups": {{ libvirt_domain_groups }}
+  }
 
 ansible_facts_path: '/etc/ansible/facts.d' # path where local Ansible facts are stored & read

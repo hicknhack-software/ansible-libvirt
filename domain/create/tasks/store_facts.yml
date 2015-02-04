@@ -13,26 +13,6 @@
     value: "{{ libvirt_result_ssh_port }}"
   when: libvirt_result_ssh_port_generated | bool
 
-- name: prepare store domain facts
-  set_fact:
-    libvirt_result_domain_facts: >
-      {
-        {% for key, var in libvirt_domain_fact_template.iteritems() %}
-          u"{{ key }}": {% if var in vars -%}
-             {{ vars[var]
-                  if vars[var] is not string
-                  else
-                ('u"%s"' % vars[var])
-             }}{%- else -%}
-             {{ hostvars[inventory_hostname][var]
-                  if hostvars[inventory_hostname][var] is not string
-                  else
-                ('u"%s"' % hostvars[inventory_hostname][var])
-             }}{%- endif -%}
-          {{ '' if loop.last else ',' }}
-        {% endfor %}
-      }
-
 - name: store_facts | store
   template:
     dest: "{{ ansible_facts_path }}/libvirt_domains.fact"
