@@ -4,6 +4,7 @@
     url: "{{ libvirt_base_vm_url }}/{{ item }}"
     dest: "/tmp/{{ item }}"
     force: yes
+  changed_when: no
   with_items:
   - "{{ libvirt_base_vm_sha256sums }}"
   - "{{ libvirt_base_vm_sha256sums_gpg }}"
@@ -51,4 +52,6 @@
   command: "qemu-img resize {{ libvirt_base_vm_disk_name }} {{ libvirt_base_vm_disk_size }}"
   args:
     chdir: "{{ libvirt_images_path }}"
-  when: convert_image_result.changed
+  when: libvirt_base_vm_disk_size is defined
+    and libvirt_base_vm_disk_size
+    and convert_image_result.changed

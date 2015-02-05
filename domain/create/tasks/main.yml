@@ -17,19 +17,20 @@
 - include: autostart.yml
 
 - include: mac_and_ip.yml
-  when: libvirt_result_domain_name not in libvirt_all_domains
 
 - include: port_forward.yml
   protocol: tcp
-  source_ip: "{{ libvirt_host_ip_address | default(ansible_default_ipv4.address, true) }}"
+  source_ip: "{{ libvirt_host_ssh_destination }}"
   source_port: "{{ libvirt_result_ssh_port }}"
   destination_ip: "{{ libvirt_result_ip_address }}"
   destination_port: "{{ libvirt_ssh_guest_port }}"
 
 - include: store_facts.yml
 
-# - name: wait for ssh
-#   wait_for:
-#     port: "{{ libvirt_result_ssh_port }}"
-#     timeout: 60 # seconds
-#   delegate_to: 127.0.0.1
+- name: wait for ssh
+  wait_for:
+    host: "{{ libvirt_host_ssh_ip_address }}"
+    port: "{{ libvirt_result_ssh_port }}"
+    timeout: 60 # seconds
+  delegate_to: 127.0.0.1
+  with_items: libvirt_domain_names

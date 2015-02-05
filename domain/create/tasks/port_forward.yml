@@ -1,16 +1,31 @@
 ---
-- name: create host hooks directory
+- name: port_forward | hooks directory
   file:
     dest: "{{ libvirt_host_qemu_machine_hooks_folder }}/{{ libvirt_result_domain_name }}"
     state: directory
 
-- name: create ssh forward hook
+- name: port_forward | script_name
+  set_fact:
+    libvirt_tmp_port_forward_hook_script: >
+      {{
+        [ libvirt_host_qemu_machine_hooks_folder,
+          libvirt_result_domain_name,
+          "%(name)s_%(ip)s-%(port)s-%(prot)s" | format(
+            name = "ssh",
+            ip = source_ip | replace('/', 's'),
+            port = source_port,
+            prot = protocol
+          )
+        ] | join('/')
+      }}
+
+- name: port_forward | ssh forward hook
   template:
-    dest: "{{ libvirt_host_qemu_machine_hooks_folder }}/{{ libvirt_result_domain_name }}/{{ source_ip }}-{{ source_port }}-tcp"
+    dest: "{{ libvirt_tmp_port_forward_hook_script }}"
     src: iptables-port-nat.sh.j2
     mode: "0744"
+  register: port_forward_result
 
-- name: run the hook
-  command: >
-    {{ libvirt_host_qemu_machine_hooks_folder }}/{{ libvirt_result_domain_name }}/{{ source_ip }}-{{ source_port }}-tcp
-    start
+- name: port_forward | run the hook
+  command: "{{ libvirt_tmp_port_forward_hook_script }} start"
+  when: port_forward_result.changed

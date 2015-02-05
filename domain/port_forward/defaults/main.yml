@@ -1,10 +1,20 @@
 ---
-libvirt_hostname: # required
+libvirt_hostname: "{{ groups['libvirt_host'][0] }}" # required
+
 manage_name: 'extra'
 port_forwards:
 - guest: # required port of guest
   host: # required port of host
-  protocol: 'tcp' # default
-  host_ip: # {{ hostvars[libvirt_hostname].ansible_default_ipv4 }}
-  host_device: # 'eth0'
-  guest_ip: # {{ ansible_default_ipv4 }}
+  protocol: "{{ libvirt_port_forward_protocol }}"
+  guest_ip: "{{ libvirt_port_forward_guest_ip }}"
+  host_ip: "{{ libvirt_port_forward_host_destination }}"
+  host_device: "{{ libvirt_port_forward_host_device }}"
+
+libvirt_port_forward_protocol: "tcp"
+libvirt_port_forward_guest_ip: "{{ ansible_default_ipv4.address }}"
+
+libvirt_port_forward_destination_all: "0.0.0.0/0"
+libvirt_port_forward_destination_default_ip: "{{ hostvars[libvirt_hostname].ansible_default_ipv4.address }}"
+libvirt_port_forward_host_destination: "{{ libvirt_port_forward_destination_all }}"
+
+libvirt_port_forward_host_device: "eth0"

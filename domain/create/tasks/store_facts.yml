@@ -1,11 +1,11 @@
 ---
-- name: create facts folder
+- name: store_facts | facts directory
   file:
     path: "{{ ansible_facts_path }}"
     state: directory
     recurse: yes
 
-- name: store fact ssh_port
+- name: store_facts | generated ssh_port
   ini_file:
     dest: "{{ ansible_facts_path }}/libvirt.fact"
     section: "facts"
@@ -18,6 +18,6 @@
     dest: "{{ ansible_facts_path }}/libvirt_domains.fact"
     src: libvirt_domains.j2
 
-- name: re-read facts
+- name: store_facts | re-read
   setup:
     filter: ansible_local

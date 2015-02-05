@@ -1,50 +1,57 @@
 ---
 - name: facts
   set_fact:
-    hooks_folder: "{{ libvirt_host_qemu_machine_hooks_folder }}/{{ ansible_hostname }}"
-    real_port_forwards: "{{ lookup('template', '../templates/port_forward_args.json.j2') }}"
+    libvirt_port_forward_hooks_folder: "{{ libvirt_host_qemu_machine_hooks_folder }}/{{ ansible_hostname }}"
+    libvirt_port_forward_tmp_args: "{{ lookup('template', '../templates/port_forward_args.json.j2') }}"
 
-- name: create file names
+- name: file names
   set_fact:
-    managed_files: "{{ lookup('template', '../templates/file_names.j2') }}"
+    libvirt_port_forward_managed_files: "{{ lookup('template', '../templates/file_names.j2') }}"
 
-- name: create machine folder
+- name: hooks folder
   file:
-    dest: "{{ hooks_folder }}"
+    dest: "{{ libvirt_port_forward_hooks_folder }}"
     state: directory
   delegate_to: "{{ libvirt_hostname }}"
 
-- name: create scripts
+- name: hook scripts
   template:
-    dest: "{{ hooks_folder }}/{{ manage_name }}_{{ item.source_ip }}-{{ item.source_port }}-{{ item.protocol }}"
+    dest: "{{ libvirt_port_forward_hooks_folder }}/{{ libvirt_port_forward_hook_script_name }}"
     src: 'port_forward.sh.j2'
     mode: 700
   delegate_to: "{{ libvirt_hostname }}"
-  with_items: real_port_forwards
-  register: create_scripts_result
+  with_items: libvirt_port_forward_tmp_args
+  register: libvirt_port_forward_tmp_hook_scripts_result
 
-- name: list existing files
+- name: list existing hook scripts
   shell: >
     find
-    {{ hooks_folder }}
+    {{ libvirt_port_forward_hooks_folder }}
     -mindepth 1
     -name '{{ manage_name }}_*'
     -type f
     -printf '%P\n'
   changed_when: no
   delegate_to: "{{ libvirt_hostname }}"
-  register: existing_files
+  register: libvirt_port_forward_tmp_existing_files
 
-- name: remove unused files
+- name: stop unused hook scripts
+  command: "{{ libvirt_port_forward_hooks_folder }}/{{ item }} stopped"
+  ignore_errors: yes
+  delegate_to: "{{ libvirt_hostname }}"
+  when: item not in libvirt_port_forward_managed_files
+  with_items: libvirt_port_forward_tmp_existing_files.stdout_lines
+
+- name: remove unused hook scripts
   file:
-    dest: "{{ hooks_folder }}/{{ item }}"
+    dest: "{{ libvirt_port_forward_hooks_folder }}/{{ item }}"
     state: absent
   delegate_to: "{{ libvirt_hostname }}"
-  when: item not in managed_files
-  with_items: existing_files.stdout_lines
+  when: item not in libvirt_port_forward_managed_files
+  with_items: libvirt_port_forward_tmp_existing_files.stdout_lines
 
-- name: start new files
+- name: start new hook scripts
   command: "{{ item.dest }} start"
   delegate_to: "{{ libvirt_hostname }}"
   when: item.changed
-  with_items: create_scripts_result.results
+  with_items: libvirt_port_forward_tmp_hook_scripts_result.results

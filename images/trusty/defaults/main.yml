@@ -6,7 +6,7 @@ libvirt_base_vm_gpg_key_server: "hkp://keyserver.ubuntu.com"
 libvirt_base_vm_gpg_keys: "D2EB44626FDDC30B513D5BB71A5D6C4C7DB87C81"
 libvirt_base_vm_img: "trusty-server-cloudimg-amd64-disk1.img"
 
-libvirt_base_vm_disk_size: "+8G"
+#libvirt_base_vm_disk_size: "+8G" # pre-resize the image
 libvirt_images_path: "/var/lib/libvirt/images"
 
 # see: https://bazaar.launchpad.net/~cloud-init-dev/cloud-init/trunk/view/head:/doc/examples/

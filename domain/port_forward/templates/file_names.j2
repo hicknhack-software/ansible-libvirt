@@ -1,6 +1,14 @@
 [
-{% for item in real_port_forwards %}
-  "{{ manage_name }}_{{ item.source_ip }}-{{ item.source_port }}-{{ item.protocol }}"
+{% for item in libvirt_port_forward_tmp_args %}
+  u"{{
+    "%(name)s_%(ip)s-%(port)s-%(prot)s"
+    | format(
+      name = manage_name,
+      ip = item.source_ip | replace('/', 's'),
+      port = item.source_port,
+      prot = item.protocol
+    )
+  }}"
   {{ '' if loop.last else ',' }}
 {% endfor %}
 ]

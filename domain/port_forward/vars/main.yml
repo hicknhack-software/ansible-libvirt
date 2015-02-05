@@ -1,2 +1,15 @@
 ---
 libvirt_host_qemu_machine_hooks_folder: '/etc/libvirt/qemu_machine_hooks'
+
+# this has to match file_names.j2 !
+# note: it cannot be used there because item never propagates
+libvirt_port_forward_hook_script_name: >
+  {{
+    "%(name)s_%(ip)s-%(port)s-%(prot)s"
+    | format(
+      name = manage_name,
+      ip = item.source_ip | replace('/', 's'),
+      port = item.source_port,
+      prot = item.protocol
+    )
+  }}
