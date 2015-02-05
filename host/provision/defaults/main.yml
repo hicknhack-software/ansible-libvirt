@@ -8,7 +8,5 @@ libvirt_host_packages:
 - uuid-runtime # generate machine uuids
 - python-configparser # required for ini_file
 
-libvirt_hostname: libvirt-host
-
 network_up_hooks:
 - 'echo 1 > /proc/sys/net/ipv4/conf/eth0/proxy_arp'

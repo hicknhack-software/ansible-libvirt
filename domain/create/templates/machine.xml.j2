@@ -37,9 +37,11 @@
 {% if libvirt_vm_cpu.topology is defined %}
     <topology sockets='{{ libvirt_vm_cpu.topology.sockets | default(1, true) }}' cores='{{ libvirt_vm_cpu.topology.cores | default(1, true) }}' threads='{{ libvirt_vm_cpu.topology.threads | default(1, true) }}'/>
 {% endif %}
-{% for feature in libvirt_vm_features %}
+{% if libvirt_vm_cpu.features is defined %}
+{%   for feature in libvirt_vm_cpu.features %}
     <feature policy='{{ (feature.policy if feature is mapping and feature.policy is defined else '') | default('require', true) }}' name='{{ feature.name if feature is mapping else feature }}' />
-{% endfor %}
+{%   endfor %}
+{% endif %}
   </cpu>
   <devices>
     <disk type='file' device='disk'>
