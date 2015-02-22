@@ -96,6 +96,7 @@ libvirt_host_ssh_ip_address: "{{ ansible_default_ipv4.address }}" # host ip addr
 libvirt_host_ssh_destination_any: "0.0.0.0/0" # bind to any host ip subnet
 libvirt_host_ssh_destination_ip: "{{ libvirt_host_ssh_ip_address }}" # bind to any host ip subnet
 libvirt_host_ssh_destination: "{{ libvirt_host_ssh_destination_any }}" # ip subnet that is bound by port forwarding
+libvirt_host_accept_all_ports: no # if enabled the firewall is configured to allow all ports of the vm being accessed
 
 # configuration options
 libvirt_images_path: "/var/lib/libvirt/images" # path on the host, where all the images are stored

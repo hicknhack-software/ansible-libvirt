@@ -15,7 +15,11 @@ update() {
   action="$1"
 
   `${iptables} -t nat ${action} PREROUTING -d ${source_ip} -p ${protocol} -m ${protocol} --dport ${source_port} -j DNAT --to-destination ${destination_ip}:${destination_port}`
+{% if libvirt_host_accept_all_ports %}
+  `${iptables} ${action} FORWARD -d ${destination_ip} -p ${protocol} -m state --state NEW -j ACCEPT`
+{% else %}
   `${iptables} ${action} FORWARD -d ${destination_ip} -p ${protocol} -m state --state NEW --dport ${destination_port} -j ACCEPT`
+{% endif %}
 }
 
 task="$1"
