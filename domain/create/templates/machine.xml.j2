@@ -49,23 +49,45 @@
       <source file='{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.img'/>
       <target dev='vda' bus='virtio'/>
     </disk>
+{% if libvirt_init_mode == 'cloud-config' %}
     <disk type='file' device='disk'>
       <source file='{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.cloud-config.img'/>
       <target dev='vdb' bus='virtio'/>
     </disk>
+{% endif %}
+{% if libvirt_init_mode == 'configdrive' %}
+    <disk type='file' device='cdrom'>
+      <source file='{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.configdrive.iso'/>
+      <target dev='hda' bus='ide'/>
+    </disk>
+{% endif %}
 {% for network in libvirt_vm_networks | default([]) %}
     <interface type='network'>
       <source network='{{ network }}'/>
       <model type='virtio'/>
     </interface>
 {% endfor %}
-{% if libvirt_vm_serial_console %}
     <serial type='pty'>
       <target port='0'/>
     </serial>
+{% if libvirt_vm_serial_console %}
     <console type='pty'>
       <target type='serial' port='0'/>
     </console>
+{% endif %}
+{% if libvirt_vm_vnc %}
+    <controller type='virtio-serial' index='0' />
+    <channel type='spicevmc'>
+      <target type='virtio' name='com.redhat.spice.0'/>
+      <address type='virtio-serial' controller='0' bus='0' port='1'/>
+    </channel>
+    <input type='tablet' bus='usb'/>
+    <input type='mouse' bus='ps2'/>
+    <input type='keyboard' bus='ps2'/>
+    <graphics type='spice' autoport='yes'/>
+    <video>
+      <model type='qxl' ram='65536' vram='65536' heads='1'/>
+    </video>
 {% endif %}
   </devices>
 </domain>

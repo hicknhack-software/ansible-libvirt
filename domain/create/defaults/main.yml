@@ -5,7 +5,13 @@ libvirt_domain_name: # name/uuid of the domain (empty means new uuid)
 libvirt_domain_title: '' # title of the vm
 libvirt_domain_description: '' # description of the vm
 # note: if you do not provide a domain_id each run will create a new vm!
-libvirt_ssh_port: # port forwarded from the host to the VM ssh (empty means new one from counter from ssh_base_port)
+
+# host ports
+# empty => new port from counter from libvirt_xxx_base_port
+# -1 => no port is forwarded
+libvirt_ssh_port: # port forwarded from the host to the VM ssh
+libvirt_rdp_port: -1 # port forwarded from the host to the VM rdp
+libvirt_winrm_port: -1 # port forwarded from the host to the VM winrm
 
 # default VM configuration
 libvirt_vm_memory: "512MiB" # RAM memory available to the VM
@@ -16,19 +22,20 @@ libvirt_vm_networks: ['default'] # libvirts id of networks this VM is part of
 libvirt_vm_disk_size: "12G" # use this to change first disk size
 libvirt_vm_features: ['acpi', 'apic', 'pae'] # vm features available
 
+# features
 libvirt_vm_serial_console: yes # make a console on serial port 0 available
+libvirt_vm_vnc: no
+
 libvirt_autostart: yes # should the domain VM start after reboot of the host
 
 # Valid install_types:
-libvirt_install_type: 'cloud-image' # way to install the VM (this only affects the first run!)
+libvirt_install_type: 'base-image' # way to install the VM (this only affects the first run!)
 #
-# 1. 'cloud-image'
-# ----------------
-# a prepared cloud-image (like the Ubuntu Server Clound Images) is cloned
-# cloud-init is used to adapt the basic setup
-libvirt_cloud_image: # relative path to the base image of the domain
-# see also the cloud_init_... parameters
-#
+# 1. 'base-image'
+# ----------
+# a simple image
+libvirt_base_image: # path to the cloud image for the domain
+libvirt_base_image_mode: 'snapshot' # options: snapshot, copy
 
 libvirt_extra_disks: []
 # - id: 'data-disk' # logical name of the disk (required)
@@ -40,14 +47,51 @@ libvirt_extra_disks: []
 #   # 2. 'image' - file image
 #   image_type: 'qcow2' # image types supported by the host (required)
 
+# cloud initialisation method
+libvirt_init_mode: 'cloud-config' # options: cloud-config, configdrive (empty will skip any initialisation)
+
+#
+# Cloud-Config
+# ============
+#
+# Used by Ubuntu Cloud images
+#
 # see https://bazaar.launchpad.net/~cloud-init-dev/cloud-init/trunk/view/head:/doc/examples/cloud-config-user-groups.txt
-libvirt_vm_users:
-- name: ubuntu
-  gecos: Ubuntu
+libvirt_cloud_config_users:
+- name: 'ubuntu'
+  gecos: 'Ubuntu'
   ssh-authorized-keys: [] # required!
-  shell: /bin/bash
-  sudo: ALL=(ALL) NOPASSWD:ALL
-  groups: [adm, audio, cdrom, dialout, floppy, video, plugdev, dip, netdev]
+  shell: '/bin/bash'
+  sudo: 'ALL=(ALL) NOPASSWD:ALL'
+  groups: 'adm, audio, cdrom, dialout, floppy, video, plugdev, dip, netdev' # comma separated string!
+
+#
+# ConfigDrive
+# ===========
+#
+# Used by Cloudbase-init from Cloudstack
+# We use it for Windows images you get from: http://www.cloudbase.it/ws2012r2/
+#
+# all the options intended to show up in the configdrive meta_data.json
+libvirt_configdrive_meta_data:
+  hostname: '{{ libvirt_result_domain_name }}'
+#  username: 'Admin'
+#  groups: 'Administrators'  # comma separated string!
+#  inject_user_password: True
+#  admin_pass: 'P1sswOrD'
+#  authorized_keys: ...
+
+# content of the user data (skipped if empty)
+libvirt_configdrive_user_data: ''
+# executed for content of first line
+#  #ps1    => Powershell
+#  rem cmd => Cmd/Batch
+#  #!      => Bash (if installed)
+
+# file structure inside the configdrive
+libvirt_configdrive_files:
+  'openstack/latest/meta_data.json': '{{ libvirt_configdrive_meta_data | to_json }}'
+  'openstack/latest/user_data': '{{ libvirt_configdrive_user_data }}'
 
 # libvirt os settings - see: https://libvirt.org/formatdomain.html#elementsOS
 libvirt_os_virtualized_x86_64:
@@ -98,6 +142,9 @@ libvirt_host_ssh_destination_ip: "{{ libvirt_host_ssh_ip_address }}" # bind to a
 libvirt_host_ssh_destination: "{{ libvirt_host_ssh_destination_any }}" # ip subnet that is bound by port forwarding
 libvirt_host_accept_all_ports: no # if enabled the firewall is configured to allow all ports of the vm being accessed
 
+libvirt_rdp_guest_port: 3389 # guest port for rdp
+libvirt_winrm_guest_port: 5985 # guest port for winrm
+
 # configuration options
 libvirt_images_path: "/var/lib/libvirt/images" # path on the host, where all the images are stored
 
@@ -105,6 +152,8 @@ libvirt_images_path: "/var/lib/libvirt/images" # path on the host, where all the
 libvirt_domain_fact_template: >
   {
     u"ssh_port": {{ libvirt_result_ssh_port }},
+    u"rdp_port": {{ libvirt_result_rdp_port }},
+    u"winrm_port": {{ libvirt_result_winrm_port }},
     u"groups": {{ libvirt_domain_groups }}
   }
 

@@ -1,0 +1,74 @@
+---
+- name: ports | ssh
+  set_fact:
+    libvirt_result_ssh_port_generated: >
+      {{
+        False
+          if (libvirt_ssh_port is defined)
+            and libvirt_ssh_port
+          else
+        False
+          if (ansible_local is defined)
+            and (ansible_local.libvirt_domains is defined)
+            and (libvirt_result_domain_name in ansible_local.libvirt_domains)
+          else
+        True
+      }}
+    libvirt_result_ssh_port: >
+      {{
+        libvirt_ssh_port
+          if (libvirt_ssh_port is defined)
+            and libvirt_ssh_port
+          else
+        ansible_local.libvirt_domains[libvirt_result_domain_name].ssh_port
+          if (ansible_local is defined)
+            and (ansible_local.libvirt_domains is defined)
+            and (libvirt_result_domain_name in ansible_local.libvirt_domains)
+          else
+        (ansible_local.libvirt.facts.ssh_port | int) + 1
+          if (ansible_local is defined)
+            and (ansible_local.libvirt is defined)
+            and (ansible_local.libvirt.facts is defined)
+          else
+        libvirt_ssh_base_port
+      }}
+  tags:
+  - facts
+
+- name: ports | rdp
+  set_fact:
+    libvirt_result_rdp_port: >
+      {{
+        libvirt_rdp_port
+          if (libvirt_rdp_port is defined)
+            and libvirt_rdp_port
+          else
+        ansible_local.libvirt_domains[libvirt_result_domain_name].rdp_port
+          if (ansible_local is defined)
+            and (ansible_local.libvirt_domains is defined)
+            and (libvirt_result_domain_name in ansible_local.libvirt_domains)
+            and ansible_local.libvirt_domains[libvirt_result_domain_name].rdp_port is defined
+          else
+        -1
+      }}
+  tags:
+  - facts
+
+- name: ports | winrm
+  set_fact:
+    libvirt_result_winrm_port: >
+      {{
+        libvirt_winrm_port
+          if (libvirt_winrm_port is defined)
+            and libvirt_winrm_port
+          else
+        ansible_local.libvirt_domains[libvirt_result_domain_name].winrm_port
+          if (ansible_local is defined)
+            and (ansible_local.libvirt_domains is defined)
+            and (libvirt_result_domain_name in ansible_local.libvirt_domains)
+            and ansible_local.libvirt_domains[libvirt_result_domain_name].winrm_port is defined
+          else
+        -1
+      }}
+  tags:
+  - facts

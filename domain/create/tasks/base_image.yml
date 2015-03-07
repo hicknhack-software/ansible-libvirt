@@ -1,0 +1,33 @@
+---
+- name: base_image | copy
+  command: >
+    cp
+    {{ libvirt_base_image }}
+    {{ libvirt_result_domain_name }}.img
+  args:
+    chdir: "{{ libvirt_images_path }}"
+    creates: "{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.img"
+  register: libvirt_copy_image_result
+  when: libvirt_base_image_mode == 'copy'
+
+- name: base_image | snapshot
+  command: >
+    qemu-img create
+    -f qcow2
+    -b {{ libvirt_base_image }}
+    {{ libvirt_result_domain_name }}.img
+  args:
+    chdir: "{{ libvirt_images_path }}"
+    creates: "{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.img"
+  register: libvirt_snapshot_image_result
+  when: libvirt_base_image_mode == 'snapshot'
+
+- name: base_image | resize
+  command: >
+    qemu-img resize
+    {{ libvirt_result_domain_name }}.img
+    {{ libvirt_vm_disk_size }}
+  args:
+    chdir: "{{ libvirt_images_path }}"
+  when: (libvirt_vm_disk_size is defined)
+    and (libvirt_copy_image_result.changed or libvirt_snapshot_image_result.changed)

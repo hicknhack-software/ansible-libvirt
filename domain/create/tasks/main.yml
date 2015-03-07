@@ -1,9 +1,15 @@
 ---
 - include: domain_id.yml
-- include: ssh_port.yml
+- include: ports.yml
 
-- include: cloud_image.yml
-  when: libvirt_install_type == 'cloud-image'
+- include: base_image.yml
+  when: libvirt_install_type == 'base-image'
+
+- include: cloud_config.yml
+  when: libvirt_init_mode == 'cloud-config'
+
+- include: configdrive.yml
+  when: libvirt_init_mode == 'configdrive'
 
 - include: list.yml
   when: libvirt_all_domains is not defined
@@ -24,13 +30,34 @@
   source_port: "{{ libvirt_result_ssh_port }}"
   destination_ip: "{{ libvirt_result_ip_address }}"
   destination_port: "{{ libvirt_ssh_guest_port }}"
+  when: (libvirt_result_ssh_port | int) > 0
+
+- include: port_forward.yml
+  protocol: tcp
+  source_ip: "{{ libvirt_host_ssh_destination }}"
+  source_port: "{{ libvirt_result_rdp_port }}"
+  destination_ip: "{{ libvirt_result_ip_address }}"
+  destination_port: "{{ libvirt_rdp_guest_port }}"
+  when: (libvirt_result_rdp_port | int) > 0
+
+- include: port_forward.yml
+  protocol: tcp
+  source_ip: "{{ libvirt_host_ssh_destination }}"
+  source_port: "{{ libvirt_result_winrm_port }}"
+  destination_ip: "{{ libvirt_result_ip_address }}"
+  destination_port: "{{ libvirt_winrm_guest_port }}"
+  when: (libvirt_result_winrm_port | int) > 0
 
 - include: store_facts.yml
 
 - name: wait for ssh
   wait_for:
     host: "{{ libvirt_host_ssh_ip_address }}"
-    port: "{{ libvirt_result_ssh_port }}"
+    port: >
+      {{ libvirt_result_winrm_port
+        if (libvirt_result_winrm_port | int) > 0
+        else libvirt_result_ssh_port
+      }}
     timeout: 60 # seconds
   delegate_to: 127.0.0.1
   with_items: libvirt_domain_names

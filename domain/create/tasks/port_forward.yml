@@ -1,10 +1,10 @@
 ---
-- name: port_forward | hooks directory
+- name: port_forward | directory
   file:
     dest: "{{ libvirt_host_qemu_machine_hooks_folder }}/{{ libvirt_result_domain_name }}"
     state: directory
 
-- name: port_forward | script_name
+- name: port_forward | name
   set_fact:
     libvirt_tmp_port_forward_hook_script: >
       {{
@@ -19,13 +19,13 @@
         ] | join('/')
       }}
 
-- name: port_forward | ssh forward hook
+- name: port_forward | create
   template:
     dest: "{{ libvirt_tmp_port_forward_hook_script }}"
     src: iptables-port-nat.sh.j2
     mode: "0744"
   register: port_forward_result
 
-- name: port_forward | run the hook
+- name: port_forward | run
   command: "{{ libvirt_tmp_port_forward_hook_script }} start"
   when: port_forward_result.changed

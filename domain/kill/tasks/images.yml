@@ -1,6 +1,6 @@
 ---
 - name: delete images
-  shell: 'rm {{ item }}*'
+  shell: 'rm -rf {{ item }}.*'
   args:
     chdir: "{{ libvirt_images_path }}"
     removes: "{{ libvirt_images_path }}/{{ item }}.img"

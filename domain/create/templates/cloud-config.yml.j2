@@ -1,5 +1,11 @@
 #cloud-config
 # {{ ansible_managed }}
 hostname: {{ libvirt_result_domain_name }}
+{# groups:
+{% for user in libvirt_cloud_config_users if user.groups is defined %}
+{%   for group in user.groups.split(',') %}
+- {{ group }}
+{%   endfor %}
+{% endfor %#}
 users:
-{{ libvirt_vm_users | to_nice_yaml }}
+{{ libvirt_cloud_config_users | to_nice_yaml }}

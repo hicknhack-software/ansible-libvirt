@@ -1,3 +1,0 @@
----
-libvirt_base_vm_disk_name: "{{ libvirt_base_vm_img.split('/') | last }}"
-libvirt_base_vm_disk_name_dist: "{{ libvirt_base_vm_img }}.dist"

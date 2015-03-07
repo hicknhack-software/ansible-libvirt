@@ -1,0 +1,30 @@
+---
+# Ubuntu Cloud image url
+libvirt_images_ubuntu_cloud_image_url: "https://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img"
+
+# checksums and signatures
+libvirt_images_ubuntu_cloud_url_base: "{{ libvirt_images_ubuntu_cloud_image_url | dirname  }}"
+libvirt_images_ubuntu_cloud_sha256sums: "SHA256SUMS" # used to verify image download
+libvirt_images_ubuntu_cloud_sha256sums_gpg: "SHA256SUMS.gpg" # used to verify checksums
+
+# pgp data used to verify integrity of the gpg file
+libvirt_images_ubuntu_cloud_gpg_key_server: "hkp://keyserver.ubuntu.com"
+libvirt_images_ubuntu_cloud_gpg_keys: "D2EB44626FDDC30B513D5BB71A5D6C4C7DB87C81"
+
+# name of the image downloaded
+libvirt_images_ubuntu_cloud_image_dist: "{{ libvirt_images_ubuntu_cloud_image_url | basename }}.dist"
+
+# name of the converted image
+libvirt_images_ubuntu_cloud_image_name: "{{ libvirt_images_ubuntu_cloud_image_sha256 }}-{{ libvirt_images_ubuntu_cloud_image_url | basename }}"
+
+# path where the images are stored
+libvirt_images_path: "/var/lib/libvirt/images"
+libvirt_images_ubuntu_cloud_tmp_folder: '/tmp'
+
+ansible_facts_path: '/etc/ansible/facts.d' # path where local Ansible facts are stored & read
+
+# resulting facts:
+# ----------------
+#
+# libvirt_images_ubuntu_cloud_image_sha256 - the sha256 of the disk image
+# ansible_local.ubuntu_cloud_image_path - the full path to the disk image

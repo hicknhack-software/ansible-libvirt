@@ -1,0 +1,65 @@
+---
+- name: download sums and signature
+  get_url:
+    url: "{{ libvirt_images_ubuntu_cloud_url_base }}/{{ item }}"
+    dest: "{{ libvirt_images_ubuntu_cloud_tmp_folder }}/{{ item }}"
+    force: yes
+  changed_when: no
+  with_flattened:
+  - "{{ libvirt_images_ubuntu_cloud_sha256sums }}"
+  - "{{ libvirt_images_ubuntu_cloud_sha256sums_gpg }}"
+
+- name: check GPG keys
+  command: >
+    gpg
+    --list-keys {{ libvirt_images_ubuntu_cloud_gpg_keys }}
+  failed_when: no
+  changed_when: no
+  register: libvirt_images_ubuntu_cloud_gpg_result
+
+- name: import GPG key
+  command: >
+    gpg
+    --keyserver {{ libvirt_images_ubuntu_cloud_gpg_key_server }}
+    --recv-keys {{ libvirt_images_ubuntu_cloud_gpg_keys }}
+  when: libvirt_images_ubuntu_cloud_gpg_result.rc != 0
+
+- name: check and extract signature
+  shell: >
+    gpg
+    --verify {{ libvirt_images_ubuntu_cloud_sha256sums_gpg }}
+    {{ libvirt_images_ubuntu_cloud_sha256sums }}
+    &&
+    cat {{ libvirt_images_ubuntu_cloud_sha256sums }}
+    | grep {{ libvirt_images_ubuntu_cloud_image_url | basename }}
+    | cut -f 1 -d " "
+  args:
+    chdir: "{{ libvirt_images_ubuntu_cloud_tmp_folder }}"
+  changed_when: no
+  register: libvirt_images_ubuntu_cloud_sha256_result
+
+- name: store sha256sum
+  set_fact:
+    libvirt_images_ubuntu_cloud_image_sha256: "{{ libvirt_images_ubuntu_cloud_sha256_result.stdout }}"
+
+- name: download image disk
+  get_url:
+    url: "{{ libvirt_images_ubuntu_cloud_image_url }}"
+    sha256sum: "{{ libvirt_images_ubuntu_cloud_image_sha256 }}"
+    dest: "{{ libvirt_images_path }}/{{ libvirt_images_ubuntu_cloud_image_dist }}"
+  register: libvirt_images_ubuntu_cloud_download_result
+
+- name: remove modified image
+  file:
+    path: "{{ libvirt_images_path }}/{{ libvirt_images_ubuntu_cloud_image_name }}"
+    state: absent
+  when: libvirt_images_ubuntu_cloud_download_result.changed
+
+- name: convert the image
+  command: "qemu-img convert -O qcow2 {{ libvirt_images_ubuntu_cloud_image_dist }} {{ libvirt_images_ubuntu_cloud_image_name }}"
+  args:
+    chdir: "{{ libvirt_images_path }}"
+    creates: "{{ libvirt_images_path }}/{{ libvirt_images_ubuntu_cloud_image_name }}"
+
+- include: store_facts.yml
+  when: libvirt_images_ubuntu_cloud_download_result.changed
