@@ -143,7 +143,7 @@ libvirt_host_ssh_destination: "{{ libvirt_host_ssh_destination_any }}" # ip subn
 libvirt_host_accept_all_ports: no # if enabled the firewall is configured to allow all ports of the vm being accessed
 
 libvirt_rdp_guest_port: 3389 # guest port for rdp
-libvirt_winrm_guest_port: 5985 # guest port for winrm
+libvirt_winrm_guest_port: 5986 # guest port for winrm (no ssl)
 
 # configuration options
 libvirt_images_path: "/var/lib/libvirt/images" # path on the host, where all the images are stored
