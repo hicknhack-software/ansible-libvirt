@@ -6,7 +6,7 @@
 
 - name: port_forward | name
   set_fact:
-    libvirt_tmp_port_forward_hook_script: >
+    libvirt_tmp_port_forward_hook_script: >-
       {{
         [ libvirt_host_qemu_machine_hooks_folder,
           libvirt_result_domain_name,

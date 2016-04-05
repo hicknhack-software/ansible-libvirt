@@ -5,7 +5,7 @@
     update_cache: yes
     state: latest
     cache_valid_time: 86400
-  with_items: libvirt_host_packages
+  with_items: "{{ libvirt_host_packages }}"
 
 - name: machine hooks folder
   file:

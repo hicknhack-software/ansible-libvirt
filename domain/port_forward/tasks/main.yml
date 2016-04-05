@@ -20,7 +20,7 @@
     src: 'port_forward.sh.j2'
     mode: 700
   delegate_to: "{{ libvirt_hostname }}"
-  with_items: libvirt_port_forward_tmp_args
+  with_items: "{{ libvirt_port_forward_tmp_args }}"
   register: libvirt_port_forward_tmp_hook_scripts_result
 
 - name: list existing hook scripts
@@ -40,7 +40,7 @@
   ignore_errors: yes
   delegate_to: "{{ libvirt_hostname }}"
   when: item not in libvirt_port_forward_managed_files
-  with_items: libvirt_port_forward_tmp_existing_files.stdout_lines
+  with_items: "{{ libvirt_port_forward_tmp_existing_files.stdout_lines }}"
 
 - name: remove unused hook scripts
   file:
@@ -48,10 +48,10 @@
     state: absent
   delegate_to: "{{ libvirt_hostname }}"
   when: item not in libvirt_port_forward_managed_files
-  with_items: libvirt_port_forward_tmp_existing_files.stdout_lines
+  with_items: "{{ libvirt_port_forward_tmp_existing_files.stdout_lines }}"
 
 - name: start new hook scripts
   command: "{{ item.dest }} start"
   delegate_to: "{{ libvirt_hostname }}"
   when: item.changed
-  with_items: libvirt_port_forward_tmp_hook_scripts_result.results
+  with_items: "{{ libvirt_port_forward_tmp_hook_scripts_result.results }}"

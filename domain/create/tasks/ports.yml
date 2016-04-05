@@ -1,7 +1,7 @@
 ---
 - name: ports | ssh
   set_fact:
-    libvirt_result_ssh_port_generated: >
+    libvirt_result_ssh_port_generated: >-
       {{
         False
           if (libvirt_ssh_port is defined)
@@ -14,7 +14,7 @@
           else
         True
       }}
-    libvirt_result_ssh_port: >
+    libvirt_result_ssh_port: >-
       {{
         libvirt_ssh_port
           if (libvirt_ssh_port is defined)
@@ -29,6 +29,7 @@
           if (ansible_local is defined)
             and (ansible_local.libvirt is defined)
             and (ansible_local.libvirt.facts is defined)
+            and (ansible_local.libvirt.facts.ssh_port is defined)
           else
         libvirt_ssh_base_port
       }}
@@ -37,7 +38,7 @@
 
 - name: ports | rdp
   set_fact:
-    libvirt_result_rdp_port: >
+    libvirt_result_rdp_port: >-
       {{
         libvirt_rdp_port
           if (libvirt_rdp_port is defined)
@@ -56,7 +57,7 @@
 
 - name: ports | winrm
   set_fact:
-    libvirt_result_winrm_port: >
+    libvirt_result_winrm_port: >-
       {{
         libvirt_winrm_port
           if (libvirt_winrm_port is defined)

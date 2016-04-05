@@ -20,13 +20,12 @@
 
 - name: domain_id | extract
   set_fact:
-    libvirt_result_domain_name: >
+    libvirt_result_domain_name: >-
       {{
         libvirt_domain_name
-          if (libvirt_domain_name is defined)
-            and libvirt_domain_name
+          if (libvirt_domain_name is defined) and libvirt_domain_name
           else
-        libvirt_domain_uuid_result.stdout | trim
+        (libvirt_domain_uuid_result.stdout | trim)
       }}
   tags:
   - facts
