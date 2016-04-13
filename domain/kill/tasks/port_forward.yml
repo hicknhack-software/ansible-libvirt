@@ -5,4 +5,4 @@
   file:
     dest: "{{ libvirt_host_qemu_machine_hooks_folder }}/{{ item }}"
     state: absent
-  with_items: libvirt_domain_names
+  with_items: "{{ libvirt_domain_names }}"

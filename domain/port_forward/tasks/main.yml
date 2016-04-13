@@ -8,50 +8,46 @@
   set_fact:
     libvirt_port_forward_managed_files: "{{ lookup('template', '../templates/file_names.j2') }}"
 
-- name: hooks folder
-  file:
-    dest: "{{ libvirt_port_forward_hooks_folder }}"
-    state: directory
-  delegate_to: "{{ libvirt_hostname }}"
+- delegate_to: "{{ libvirt_hostname }}"
+  block:
+  - name: hooks folder
+    file:
+      dest: "{{ libvirt_port_forward_hooks_folder }}"
+      state: directory
 
-- name: hook scripts
-  template:
-    dest: "{{ libvirt_port_forward_hooks_folder }}/{{ libvirt_port_forward_hook_script_name }}"
-    src: 'port_forward.sh.j2'
-    mode: 700
-  delegate_to: "{{ libvirt_hostname }}"
-  with_items: libvirt_port_forward_tmp_args
-  register: libvirt_port_forward_tmp_hook_scripts_result
+  - name: hook scripts
+    template:
+      dest: "{{ libvirt_port_forward_hooks_folder }}/{{ libvirt_port_forward_hook_script_name }}"
+      src: 'port_forward.sh.j2'
+      mode: 700
+    with_items: "{{ libvirt_port_forward_tmp_args }}"
+    register: libvirt_port_forward_tmp_hook_scripts_result
 
-- name: list existing hook scripts
-  shell: >
-    find
-    {{ libvirt_port_forward_hooks_folder }}
-    -mindepth 1
-    -name '{{ manage_name }}_*'
-    -type f
-    -printf '%P\n'
-  changed_when: no
-  delegate_to: "{{ libvirt_hostname }}"
-  register: libvirt_port_forward_tmp_existing_files
+  - name: list existing hook scripts
+    shell: >
+      find
+      {{ libvirt_port_forward_hooks_folder }}
+      -mindepth 1
+      -name '{{ manage_name }}_*'
+      -type f
+      -printf '%P\n'
+    changed_when: no
+    register: libvirt_port_forward_tmp_existing_files
 
-- name: stop unused hook scripts
-  command: "{{ libvirt_port_forward_hooks_folder }}/{{ item }} stopped"
-  ignore_errors: yes
-  delegate_to: "{{ libvirt_hostname }}"
-  when: item not in libvirt_port_forward_managed_files
-  with_items: libvirt_port_forward_tmp_existing_files.stdout_lines
+  - name: stop unused hook scripts
+    command: "{{ libvirt_port_forward_hooks_folder }}/{{ item }} stopped"
+    ignore_errors: yes
+    when: item not in libvirt_port_forward_managed_files
+    with_items: "{{ libvirt_port_forward_tmp_existing_files.stdout_lines }}"
 
-- name: remove unused hook scripts
-  file:
-    dest: "{{ libvirt_port_forward_hooks_folder }}/{{ item }}"
-    state: absent
-  delegate_to: "{{ libvirt_hostname }}"
-  when: item not in libvirt_port_forward_managed_files
-  with_items: libvirt_port_forward_tmp_existing_files.stdout_lines
+  - name: remove unused hook scripts
+    file:
+      dest: "{{ libvirt_port_forward_hooks_folder }}/{{ item }}"
+      state: absent
+    when: item not in libvirt_port_forward_managed_files
+    with_items: "{{ libvirt_port_forward_tmp_existing_files.stdout_lines }}"
 
-- name: start new hook scripts
-  command: "{{ item.dest }} start"
-  delegate_to: "{{ libvirt_hostname }}"
-  when: item.changed
-  with_items: libvirt_port_forward_tmp_hook_scripts_result.results
+  - name: start new hook scripts
+    command: "{{ item.dest }} start"
+    when: item.changed
+    with_items: "{{ libvirt_port_forward_tmp_hook_scripts_result.results }}"

@@ -11,4 +11,4 @@
 - name: undefine machine
   command: 'virsh undefine "{{ item }}"'
   when: item in libvirt_all_domains
-  with_items: libvirt_domain_names
+  with_items: "{{ libvirt_domain_names }}"
