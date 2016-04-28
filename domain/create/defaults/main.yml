@@ -149,7 +149,7 @@ libvirt_winrm_guest_port: 5986 # guest port for winrm (no ssl)
 libvirt_images_path: "/var/lib/libvirt/images" # path on the host, where all the images are stored
 
 # template for the stored facts hash (values are variable/fact names)
-libvirt_domain_fact_template: >
+libvirt_domain_fact_template: >-
   {
     u"ssh_port": {{ libvirt_result_ssh_port }},
     u"rdp_port": {{ libvirt_result_rdp_port }},
