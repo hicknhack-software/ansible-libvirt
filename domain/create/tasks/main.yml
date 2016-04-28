@@ -53,7 +53,7 @@
 - name: wait for ssh
   wait_for:
     host: "{{ libvirt_host_ssh_ip_address }}"
-    port: >
+    port: >-
       {{ libvirt_result_winrm_port
         if (libvirt_result_winrm_port | int) > 0
         else libvirt_result_ssh_port
