@@ -2,6 +2,10 @@
 - include: domain_id.yml
 - include: ports.yml
 
+- include: extra_disk.yml
+  disk: "{{ item }}"
+  with_items: "{{ libvirt_extra_disks }}"
+
 - include: base_image.yml
   when: libvirt_install_type == 'base-image'
 
@@ -55,7 +59,7 @@
     host: "{{ libvirt_host_ssh_ip_address }}"
     port: >-
       {{ libvirt_result_winrm_port
-        if (libvirt_result_winrm_port | int) > 0
+          if (libvirt_result_winrm_port | int) > 0
         else
           libvirt_result_ssh_port
       }}

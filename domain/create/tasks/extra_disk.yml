@@ -1,0 +1,16 @@
+---
+- name: create lvm disk
+  fail:
+    msg: 'LVM disk creation is not implemented yet!'
+  when: (disk.type | default('image', true)) == 'lvm'
+
+- name: create image disk
+  command: >
+    qemu-img create
+    -f {{ disk.image_type | default('qcow2', true) }}
+    {{ libvirt_result_domain_name }}.extra_{{ disk.id }}.img
+    {{ disk.size }}
+  args:
+    chdir: "{{ libvirt_images_path }}"
+    creates: "{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.extra_{{ disk.id }}.img"
+  when: (disk.type | default('image', true)) == 'image'

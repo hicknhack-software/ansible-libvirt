@@ -12,9 +12,37 @@ groups:
 users:
 {{ libvirt_cloud_config_users | to_nice_yaml }}
 packages:
-- python{# python ensures ansible can manage this host
-
-# alternative to manage_etc_hosts that allows to specify the full hostname
+- python
+{# python ensures ansible can manage this host #}
+{# alternative to manage_etc_hosts that allows to specify the full hostname
 bootcmd:
 - [ cloud-init-per, once, configure-hostname, "/bin/sh", "-c", "echo 127.0.1.1 {{ libvirt_result_domain_name }} >> /etc/hosts" ]
 #}
+{% if libvirt_extra_disks | default(false) %}
+{% set alpha = 'abcdefghijklmnopqrstuvwxyz' %}
+{% set vd_index = 2 %}{# 0 - boot disk, 1 - cloud-config %}{#
+disk_setup:
+{% for disk in libvirt_extra_disks %}
+  /dev/vd{{ alpha[vd_index] }}:
+    table_type: mbr
+    layout: True
+    overwrite: False
+{%   set vd_index = vd_index + 1 %}
+{% endfor %}#}
+{% set vd_index = 2 %}{# 0 - boot disk, 1 - cloud-config #}
+fs_setup:
+{% for disk in libvirt_extra_disks %}
+  - label: '{{ disk.label | default(disk.id, true) }}'
+    filesystem: '{{ disk.fs | default('ext4', true) }}'
+    device: '/dev/vd{{ alpha[vd_index] }}'
+    partition: none
+    overwrite: False
+{%   set vd_index = vd_index + 1 %}
+{% endfor %}
+{% set vd_index = 2 %}{# 0 - boot disk, 1 - cloud-config #}
+mounts:
+{% for disk in libvirt_extra_disks %}
+- [ 'vd{{ alpha[vd_index] }}', '{{ disk.mount_path | default('/data') }}', 'auto', '{{ disk.mount_opts | default('defaults,noatime,nodev') }}' ]
+{%   set vd_index = vd_index + 1 %}
+{% endfor %}
+{% endif %}

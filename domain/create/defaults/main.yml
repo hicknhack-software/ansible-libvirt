@@ -42,7 +42,17 @@ libvirt_domain:
     path: # path to the cloud image for the domain
     mode: 'snapshot' # options: snapshot, copy
 
-  #extra_disks:
+  extra_disks: []
+  # - id: 'data-disk' # logical name of the disk (required)
+  #   mount_path: '/data' # vm path for mounting (default)
+  #   mount_opts: 'defaults,noatime,nodev' # options for mounting (default)
+  #   size: '8G' # size of the disk (required)
+  #   type: 'image' # type of the disk (default)
+  #   # type options
+  #   # 1. 'image' - file image
+  #   image_type: 'qcow2' # image types supported by the host (default)
+  #   # 2. 'lvm' - logical disk
+  #   lvm_group: '' # name of volume group (required)
 
   # cloud initialisation method
   init_mode: 'cloud-config' # options: cloud-config, configdrive (empty will skip any initialisation)
@@ -120,9 +130,10 @@ libvirt_domain_title: "{{ libvirt_domain.title | default('', true) }}" # title o
 libvirt_domain_description: "{{ libvirt_domain.description | default('', true) }}" # description of the vm
 # note: if you do not provide a domain_id each run will create a new vm!
 
-# host ports
-# empty => new port from counter from libvirt_xxx_base_port
+# host access ports
+#  0 => new port from counter from libvirt_xxx_base_port
 # -1 => no port is forwarded
+# >0 => use this host port
 libvirt_ssh_port: "{{ libvirt_domain.host_ports.ssh | default(0, true) }}" # port forwarded from the host to the VM ssh
 libvirt_rdp_port: "{{ libvirt_domain.host_ports.rdp | default(-1, true) }}" # port forwarded from the host to the VM rdp
 libvirt_winrm_port: "{{ libvirt_domain.host_ports.winrm | default(-1, true) }}" # port forwarded from the host to the VM winrm
@@ -153,13 +164,15 @@ libvirt_base_image_mode: "{{ libvirt_domain.base_image.mode | default('snapshot'
 
 libvirt_extra_disks: "{{ libvirt_domain.extra_disks | default([], true) }}"
 # - id: 'data-disk' # logical name of the disk (required)
+#   mount_path: '/data' # vm path for mounting (default)
+#   mount_opts: 'defaults,noatime,nodev' # options for mounting (default)
 #   size: '8G' # size of the disk (required)
-#   type: 'lvm' # type of the disk (required)
+#   type: 'image' # type of the disk (default)
 #   # type options
-#   # 1. 'lvm' - logical disk
+#   # 1. 'image' - file image
+#   image_type: 'qcow2' # image types supported by the host (default)
+#   # 2. 'lvm' - logical disk
 #   lvm_group: '' # name of volume group (required)
-#   # 2. 'image' - file image
-#   image_type: 'qcow2' # image types supported by the host (required)
 
 # cloud initialisation method
 libvirt_init_mode: "{{ libvirt_domain.init_mode | default('cloud-config', true) }}" # options: cloud-config, configdrive (empty will skip any initialisation)
