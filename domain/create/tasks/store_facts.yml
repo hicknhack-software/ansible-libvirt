@@ -13,6 +13,22 @@
     value: "{{ libvirt_result_ssh_port }}"
   when: libvirt_result_ssh_port_generated | bool
 
+- name: store_facts | generated rdp_port
+  ini_file:
+    dest: "{{ ansible_facts_path }}/libvirt.fact"
+    section: "facts"
+    option: "rdp_port"
+    value: "{{ libvirt_result_rdp_port }}"
+  when: libvirt_result_rdp_port_generated | bool
+
+- name: store_facts | generated winrm_port
+  ini_file:
+    dest: "{{ ansible_facts_path }}/libvirt.fact"
+    section: "facts"
+    option: "winrm_port"
+    value: "{{ libvirt_result_winrm_port }}"
+  when: libvirt_result_winrm_port_generated | bool
+
 - name: store_facts | store
   template:
     dest: "{{ ansible_facts_path }}/libvirt_domains.fact"

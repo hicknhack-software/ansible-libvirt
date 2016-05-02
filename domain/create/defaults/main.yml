@@ -1,54 +1,181 @@
 ---
+libvirt_domain:
+  # basic arguments
+  groups: [] # names of Ansible nodes/groups used to provision the domain
+  name: # name/uuid of the domain (empty means new uuid)
+  title: '' # title of the vm
+  description: '' # description of the vm
+  # note: if you do not provide a domain_id each run will create a new vm!
+
+  # host access ports
+  #  0 => new port from counter from libvirt_xxx_base_port
+  # -1 => no port is forwarded
+  # >0 => use this host port
+  host_ports:
+    ssh: 0 # port forwarded from the host to the VM ssh
+    rdp: -1 # port forwarded from the host to the VM rdp
+    winrm: -1 # port forwarded from the host to the VM winrm
+
+  # default VM configuration
+  vm:
+    memory: "512MiB" # RAM memory available to the VM
+    vcpu: 1 # number of cores designated to the VM
+    vcpu_placement: 'static' # options 'auto', 'static', defaults to 'numatune'
+    vcpu_cpuset: [] # list of host CPU numbers the VM can run on
+    networks: ['default'] # libvirts id of networks this VM is part of
+    disk_size: "12G" # use this to change first disk size
+    features: ['acpi', 'apic', 'pae'] # vm features available
+
+  # features
+  serial_console: yes # make a console on serial port 0 available
+  vnc: no
+  autostart: yes # should the domain VM start after reboot of the host
+
+  # Valid install_types:
+  install_type: 'base-image' # way to install the VM (this only affects the first run!)
+
+  #
+  # 1. 'base-image'
+  # ----------
+  # a simple image
+  base_image:
+    path: # path to the cloud image for the domain
+    mode: 'snapshot' # options: snapshot, copy
+
+  extra_disks: []
+  # - id: 'data-disk' # logical name of the disk (required)
+  #   mount_path: '/data' # vm path for mounting (default)
+  #   mount_opts: 'defaults,noatime,nodev' # options for mounting (default)
+  #   size: '8G' # size of the disk (required)
+  #   type: 'image' # type of the disk (default)
+  #   # type options
+  #   # 1. 'image' - file image
+  #   image_type: 'qcow2' # image types supported by the host (default)
+  #   # 2. 'lvm' - logical disk
+  #   lvm_group: '' # name of volume group (required)
+
+  # cloud initialisation method
+  init_mode: 'cloud-config' # options: cloud-config, configdrive (empty will skip any initialisation)
+
+  #
+  # Cloud-Config
+  # ============
+  #
+  # Used by Ubuntu Cloud images
+  #
+  # see https://bazaar.launchpad.net/~cloud-init-dev/cloud-init/trunk/view/head:/doc/examples/cloud-config-user-groups.txt
+  cloud_config:
+    users:
+    - name: 'ubuntu'
+      gecos: 'Ubuntu'
+      ssh-authorized-keys: [] # required!
+      shell: '/bin/bash'
+      sudo: 'ALL=(ALL) NOPASSWD:ALL'
+      groups: 'adm, audio, cdrom, dialout, floppy, video, plugdev, dip, netdev' # comma separated string!
+
+  #
+  # ConfigDrive
+  # ===========
+  #
+  # Used by Cloudbase-init from Cloudstack
+  # We use it for Windows images you get from: http://www.cloudbase.it/ws2012r2/
+  #
+  # all the options intended to show up in the configdrive meta_data.json
+  configdrive:
+    meta_data:
+      hostname: '{{ libvirt_result_domain_name }}'
+      #  username: 'Admin'
+      #  groups: 'Administrators'  # comma separated string!
+      #  inject_user_password: True
+      #  admin_pass: 'P1sswOrD'
+      #  authorized_keys: ...
+
+    # content of the user data (skipped if empty)
+    user_data: ''
+    # executed for content of first line
+    #  #ps1    => Powershell
+    #  rem cmd => Cmd/Batch
+    #  #!      => Bash (if installed)
+
+    # extra file structure inside the configdrive
+    #extra_files:
+      # filename: text content
+
+  # libvirt os settings - see: https://libvirt.org/formatdomain.html#elementsOS
+  os: "{{ libvirt_os_virtualized_x86_64 }}"
+  #   type: 'hvm' # options 'hvm'*, 'linux', 'exe'
+  #   type_arch: 'x86_64' # cpu architecture required by the os
+  #   type_machine: 'pc' # system architecture required by the os
+  #   boot: ['hd'] # devices for boot
+
+  # libvirt cpu settings - see: https://libvirt.org/formatdomain.html#elementsCPU
+  cpu: "{{ libvirt_vm_cpu_fast }}"
+  # more options:
+  #   model: # name of the cpu model eg. "core2duo"
+  #   model_fallback: 'allow' # fallback options 'allow', 'forbid'
+  #   vendor: # name of the vendor eg. "Intel"
+  #   topology: # simulated CPU topology
+  #     sockets: 1
+  #     cores: 1
+  #     threads: 1
+  #   features: [] # array of hashes
+  #   - name: 'vmx'
+  #     policy: 'require' # options 'force', 'require', 'optional', 'disable', 'forbid'
+  #   - 'smx' # feature with default policy 'require'
+
 # basic arguments
-libvirt_domain_groups: [] # names of Ansible nodes/groups used to provision the domain
-libvirt_domain_name: # name/uuid of the domain (empty means new uuid)
-libvirt_domain_title: '' # title of the vm
-libvirt_domain_description: '' # description of the vm
+libvirt_domain_groups: "{{ libvirt_domain.groups | default([], true) }}" # names of Ansible nodes/groups used to provision the domain
+libvirt_domain_name: "{{ libvirt_domain.name | default('', true) }}" # name/uuid of the domain (empty means new uuid)
+libvirt_domain_title: "{{ libvirt_domain.title | default('', true) }}" # title of the vm
+libvirt_domain_description: "{{ libvirt_domain.description | default('', true) }}" # description of the vm
 # note: if you do not provide a domain_id each run will create a new vm!
 
-# host ports
-# empty => new port from counter from libvirt_xxx_base_port
+# host access ports
+#  0 => new port from counter from libvirt_xxx_base_port
 # -1 => no port is forwarded
-libvirt_ssh_port: # port forwarded from the host to the VM ssh
-libvirt_rdp_port: -1 # port forwarded from the host to the VM rdp
-libvirt_winrm_port: -1 # port forwarded from the host to the VM winrm
+# >0 => use this host port
+libvirt_ssh_port: "{{ libvirt_domain.host_ports.ssh | default(0, true) }}" # port forwarded from the host to the VM ssh
+libvirt_rdp_port: "{{ libvirt_domain.host_ports.rdp | default(-1, true) }}" # port forwarded from the host to the VM rdp
+libvirt_winrm_port: "{{ libvirt_domain.host_ports.winrm | default(-1, true) }}" # port forwarded from the host to the VM winrm
 
 # default VM configuration
-libvirt_vm_memory: "512MiB" # RAM memory available to the VM
-libvirt_vm_vcpu: 1 # number of cores designated to the VM
-libvirt_vm_vcpu_placement: 'static' # options 'auto', 'static', defaults to 'numatune'
-libvirt_vm_vcpu_cpuset: [] # list of host CPU numbers the VM can run on
-libvirt_vm_networks: ['default'] # libvirts id of networks this VM is part of
-libvirt_vm_disk_size: "12G" # use this to change first disk size
-libvirt_vm_features: ['acpi', 'apic', 'pae'] # vm features available
+libvirt_vm_memory: "{{ (libvirt_domain.vm | default({}, true)).memory | default('512MiB', true) }}" # RAM memory available to the VM
+libvirt_vm_vcpu: "{{ (libvirt_domain.vm | default({}, true)).vcpu | default('1', true) }}" # number of cores designated to the VM
+libvirt_vm_vcpu_placement: "{{ (libvirt_domain.vm | default({}, true)).vcpu_placement | default('static', true) }}" # options 'auto', 'static', defaults to 'numatune'
+libvirt_vm_vcpu_cpuset: "{{ (libvirt_domain.vm | default({}, true)).vcpu_cpuset | default([], true) }}" # list of host CPU numbers the VM can run on
+libvirt_vm_networks: "{{ (libvirt_domain.vm | default({}, true)).networks | default(['default'], true) }}" # libvirts id of networks this VM is part of
+libvirt_vm_disk_size: "{{ (libvirt_domain.vm | default({}, true)).disk_size | default('12G', true) }}" # use this to change first disk size
+libvirt_vm_features: "{{ (libvirt_domain.vm | default({}, true)).features | default(['acpi', 'apic', 'pae'], true) }}" # vm features available
 
 # features
-libvirt_vm_serial_console: yes # make a console on serial port 0 available
-libvirt_vm_vnc: no
+libvirt_vm_serial_console: "{{ libvirt_domain.serial_console | default(true, true) }}" # make a console on serial port 0 available
+libvirt_vm_vnc: "{{ libvirt_domain.vnc | default(false, true) }}"
 
-libvirt_autostart: yes # should the domain VM start after reboot of the host
+libvirt_autostart: "{{ libvirt_domain.autostart | default(true, true) }}" # should the domain VM start after reboot of the host
 
 # Valid install_types:
-libvirt_install_type: 'base-image' # way to install the VM (this only affects the first run!)
+libvirt_install_type: "{{ libvirt_domain.install_type | default('base-image', true) }}" # way to install the VM (this only affects the first run!)
 #
 # 1. 'base-image'
 # ----------
 # a simple image
-libvirt_base_image: # path to the cloud image for the domain
-libvirt_base_image_mode: 'snapshot' # options: snapshot, copy
+libvirt_base_image: "{{ libvirt_domain.base_image.path | default('', true) }}" # path to the cloud image for the domain
+libvirt_base_image_mode: "{{ libvirt_domain.base_image.mode | default('snapshot', true) }}" # options: snapshot, copy
 
-libvirt_extra_disks: []
+libvirt_extra_disks: "{{ libvirt_domain.extra_disks | default([], true) }}"
 # - id: 'data-disk' # logical name of the disk (required)
+#   mount_path: '/data' # vm path for mounting (default)
+#   mount_opts: 'defaults,noatime,nodev' # options for mounting (default)
 #   size: '8G' # size of the disk (required)
-#   type: 'lvm' # type of the disk (required)
+#   type: 'image' # type of the disk (default)
 #   # type options
-#   # 1. 'lvm' - logical disk
+#   # 1. 'image' - file image
+#   image_type: 'qcow2' # image types supported by the host (default)
+#   # 2. 'lvm' - logical disk
 #   lvm_group: '' # name of volume group (required)
-#   # 2. 'image' - file image
-#   image_type: 'qcow2' # image types supported by the host (required)
 
 # cloud initialisation method
-libvirt_init_mode: 'cloud-config' # options: cloud-config, configdrive (empty will skip any initialisation)
+libvirt_init_mode: "{{ libvirt_domain.init_mode | default('cloud-config', true) }}" # options: cloud-config, configdrive (empty will skip any initialisation)
 
 #
 # Cloud-Config
@@ -57,8 +184,10 @@ libvirt_init_mode: 'cloud-config' # options: cloud-config, configdrive (empty wi
 # Used by Ubuntu Cloud images
 #
 # see https://bazaar.launchpad.net/~cloud-init-dev/cloud-init/trunk/view/head:/doc/examples/cloud-config-user-groups.txt
-libvirt_cloud_config_users:
-- name: 'ubuntu'
+libvirt_cloud_config_users: "{{ (libvirt_domain.cloud_config | default({}, true)).users | default([libvirt_cloud_config_default_user], true) }}"
+
+libvirt_cloud_config_default_user:
+  name: 'ubuntu'
   gecos: 'Ubuntu'
   ssh-authorized-keys: [] # required!
   shell: '/bin/bash'
@@ -73,7 +202,9 @@ libvirt_cloud_config_users:
 # We use it for Windows images you get from: http://www.cloudbase.it/ws2012r2/
 #
 # all the options intended to show up in the configdrive meta_data.json
-libvirt_configdrive_meta_data:
+libvirt_configdrive_meta_data: "{{ (libvirt_domain.configdrive | default({}, true)).meta_data | default(libvirt_configdrive_default_meta_data, true) }}"
+
+libvirt_configdrive_default_meta_data:
   hostname: '{{ libvirt_result_domain_name }}'
 #  username: 'Admin'
 #  groups: 'Administrators'  # comma separated string!
@@ -82,14 +213,16 @@ libvirt_configdrive_meta_data:
 #  authorized_keys: ...
 
 # content of the user data (skipped if empty)
-libvirt_configdrive_user_data: ''
+libvirt_configdrive_user_data: "{{ (libvirt_domain.configdrive | default({}, true)).user_data | default('', true) }}"
 # executed for content of first line
 #  #ps1    => Powershell
 #  rem cmd => Cmd/Batch
 #  #!      => Bash (if installed)
 
 # file structure inside the configdrive
-libvirt_configdrive_files:
+libvirt_configdrive_files: "{{ (libvirt_domain.configdrive | default({}, true)).extra_files | default([], true) | combine(libvirt_configdrive_base_files) }}"
+
+libvirt_configdrive_base_files:
   'openstack/latest/meta_data.json': '{{ libvirt_configdrive_meta_data | to_json }}'
   'openstack/latest/user_data': '{{ libvirt_configdrive_user_data }}'
 
@@ -102,7 +235,7 @@ libvirt_os_virtualized_x86:
   type: 'hvm'
   type_arch: 'i686'
 
-libvirt_os: "{{ libvirt_os_virtualized_x86_64 }}"
+libvirt_os: "{{ libvirt_domain.os | default(libvirt_os_virtualized_x86_64, true) }}"
 #   type: 'hvm' # options 'hvm'*, 'linux', 'exe'
 #   type_arch: 'x86_64' # cpu architecture required by the os
 #   type_machine: 'pc' # system architecture required by the os
@@ -119,7 +252,7 @@ libvirt_vm_cpu_migratable:
 libvirt_vm_cpu_fast:
   mode: 'host-model' # everything libvirt understands
 
-libvirt_vm_cpu: "{{ libvirt_vm_cpu_fast }}"
+libvirt_vm_cpu: "{{ libvirt_domain.cpu | default(libvirt_vm_cpu_fast, true) }}"
 # more options:
 #   model: # name of the cpu model eg. "core2duo"
 #   model_fallback: 'allow' # fallback options 'allow', 'forbid'
@@ -142,7 +275,10 @@ libvirt_host_ssh_destination_ip: "{{ libvirt_host_ssh_ip_address }}" # bind to a
 libvirt_host_ssh_destination: "{{ libvirt_host_ssh_destination_any }}" # ip subnet that is bound by port forwarding
 libvirt_host_accept_all_ports: no # if enabled the firewall is configured to allow all ports of the vm being accessed
 
+libvirt_rdp_base_port: 33890 # first host port for forwards to VM rdp
 libvirt_rdp_guest_port: 3389 # guest port for rdp
+
+libvirt_winrm_base_port: 59860 # first host port for forwards to VM winrm
 libvirt_winrm_guest_port: 5986 # guest port for winrm (no ssl)
 
 # configuration options

@@ -44,16 +44,20 @@
 {% endif %}
   </cpu>
   <devices>
+{% set alpha = 'abcdefghijklmnopqrstuvwxyz' %}
+{% set vd_index = 0 %}
     <disk type='file' device='disk'>
       <driver type='qcow2' cache='writeback'/>
       <source file='{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.img'/>
-      <target dev='vda' bus='virtio'/>
+      <target dev='vd{{ alpha[vd_index] }}' bus='virtio'/>
     </disk>
+{% set vd_index = vd_index + 1 %}
 {% if libvirt_init_mode == 'cloud-config' %}
     <disk type='file' device='disk'>
       <source file='{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.cloud-config.img'/>
-      <target dev='vdb' bus='virtio'/>
+      <target dev='vd{{ alpha[vd_index] }}' bus='virtio'/>
     </disk>
+{%   set vd_index = vd_index + 1 %}
 {% endif %}
 {% if libvirt_init_mode == 'configdrive' %}
     <disk type='file' device='cdrom'>
@@ -61,6 +65,23 @@
       <target dev='hda' bus='ide'/>
     </disk>
 {% endif %}
+{% for disk in libvirt_extra_disks | default([]) %}
+{%   if (disk.type | default('image')) == 'image' %}
+    <disk type='file' device='disk'>
+      <driver type='{{ disk.image_type | default('qcow2', true) }}' cache='writeback'/>
+      <source file='{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.extra_{{ disk.id }}.img'/>
+      <target dev='vd{{ alpha[vd_index] }}' bus='virtio'/>
+    </disk>
+{%     set vd_index = vd_index + 1 %}
+{%   elif (disk.type | default('image')) == 'lvm' %}
+    <disk type='block' device='disk'>
+      <driver name='qemu' type='raw'/>
+      <source dev='/dev/{{ disk.lvm_group }}/{{ disk.id }}'/>
+      <target dev='vd{{ alpha[vd_index] }}' bus='virtio'/>
+    </disk>
+{%     set vd_index = vd_index + 1 %}
+{%   endif %}
+{% endfor %}
 {% for network in libvirt_vm_networks | default([]) %}
     <interface type='network'>
       <source network='{{ network }}'/>
