@@ -142,7 +142,10 @@ libvirt_host_ssh_destination_ip: "{{ libvirt_host_ssh_ip_address }}" # bind to a
 libvirt_host_ssh_destination: "{{ libvirt_host_ssh_destination_any }}" # ip subnet that is bound by port forwarding
 libvirt_host_accept_all_ports: no # if enabled the firewall is configured to allow all ports of the vm being accessed
 
+libvirt_rdp_base_port: 33890 # first host port for forwards to VM rdp
 libvirt_rdp_guest_port: 3389 # guest port for rdp
+
+libvirt_winrm_base_port: 59860 # first host port for forwards to VM winrm
 libvirt_winrm_guest_port: 5986 # guest port for winrm (no ssl)
 
 # configuration options

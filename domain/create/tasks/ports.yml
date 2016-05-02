@@ -4,26 +4,20 @@
     libvirt_result_ssh_port_generated: >-
       {{
         False
-          if (libvirt_ssh_port is defined)
-            and libvirt_ssh_port
+          if (libvirt_ssh_port is defined) and ((libvirt_ssh_port | int) != 0)
           else
         False
-          if (ansible_local is defined)
-            and (ansible_local.libvirt_domains is defined)
-            and (libvirt_result_domain_name in ansible_local.libvirt_domains)
+          if libvirt_result_domain_name in ((ansible_local | default({}, true)).libvirt_domains | default({}, true))
           else
         True
       }}
     libvirt_result_ssh_port: >-
       {{
-        libvirt_ssh_port
-          if (libvirt_ssh_port is defined)
-            and libvirt_ssh_port
+        libvirt_ssh_port | default(-1, true)
+          if (libvirt_ssh_port is defined) and ((libvirt_ssh_port | int) != 0)
           else
         ansible_local.libvirt_domains[libvirt_result_domain_name].ssh_port
-          if (ansible_local is defined)
-            and (ansible_local.libvirt_domains is defined)
-            and (libvirt_result_domain_name in ansible_local.libvirt_domains)
+          if libvirt_result_domain_name in ((ansible_local | default({}, true)).libvirt_domains | default({}, true))
           else
         (ansible_local.libvirt.facts.ssh_port | int) + 1
           if (ansible_local is defined)
@@ -38,38 +32,62 @@
 
 - name: ports | rdp
   set_fact:
+    libvirt_result_rdp_port_generated: >-
+      {{
+        False
+          if (libvirt_rdp_port is undefined) or ((libvirt_rdp_port | int) != 0)
+          else
+        False
+          if libvirt_result_domain_name in ((ansible_local | default({}, true)).libvirt_domains | default({}, true))
+          else
+        True
+      }}
     libvirt_result_rdp_port: >-
       {{
-        libvirt_rdp_port
-          if (libvirt_rdp_port is defined)
-            and libvirt_rdp_port
+        libvirt_rdp_port | default(-1, true)
+          if (libvirt_rdp_port is undefined) or ((libvirt_rdp_port | int) != 0)
           else
         ansible_local.libvirt_domains[libvirt_result_domain_name].rdp_port
-          if (ansible_local is defined)
-            and (ansible_local.libvirt_domains is defined)
-            and (libvirt_result_domain_name in ansible_local.libvirt_domains)
-            and ansible_local.libvirt_domains[libvirt_result_domain_name].rdp_port is defined
+          if libvirt_result_domain_name in ((ansible_local | default({}, true)).libvirt_domains | default({}, true))
           else
-        -1
+        (ansible_local.libvirt.facts.rdp_port | int) + 1
+          if (ansible_local is defined)
+            and (ansible_local.libvirt is defined)
+            and (ansible_local.libvirt.facts is defined)
+            and (ansible_local.libvirt.facts.rdp_port is defined)
+          else
+        libvirt_rdp_base_port
       }}
   tags:
   - facts
 
 - name: ports | winrm
   set_fact:
+    libvirt_result_winrm_port_generated: >-
+      {{
+        False
+          if (libvirt_winrm_port is undefined) or ((libvirt_winrm_port | int) != 0)
+          else
+        False
+          if libvirt_result_domain_name in ((ansible_local | default({}, true)).libvirt_domains | default({}, true))
+          else
+        True
+      }}
     libvirt_result_winrm_port: >-
       {{
-        libvirt_winrm_port
-          if (libvirt_winrm_port is defined)
-            and libvirt_winrm_port
+        libvirt_winrm_port | default(-1, true)
+          if (libvirt_winrm_port is undefined) or ((libvirt_winrm_port | int) != 0)
           else
         ansible_local.libvirt_domains[libvirt_result_domain_name].winrm_port
-          if (ansible_local is defined)
-            and (ansible_local.libvirt_domains is defined)
-            and (libvirt_result_domain_name in ansible_local.libvirt_domains)
-            and ansible_local.libvirt_domains[libvirt_result_domain_name].winrm_port is defined
+          if libvirt_result_domain_name in ((ansible_local | default({}, true)).libvirt_domains | default({}, true))
           else
-        -1
+        (ansible_local.libvirt.facts.winrm_port | int) + 1
+          if (ansible_local is defined)
+            and (ansible_local.libvirt is defined)
+            and (ansible_local.libvirt.facts is defined)
+            and (ansible_local.libvirt.facts.winrm_port is defined)
+          else
+        libvirt_winrm_base_port
       }}
   tags:
   - facts
