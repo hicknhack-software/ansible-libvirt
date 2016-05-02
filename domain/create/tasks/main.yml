@@ -60,5 +60,4 @@
       }}
     timeout: 60 # seconds
   delegate_to: 127.0.0.1
-  with_items: libvirt_domain_names
   when: (libvirt_result_winrm_port | int) <= 0
