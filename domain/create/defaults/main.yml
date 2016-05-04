@@ -71,7 +71,7 @@ libvirt_domain:
       ssh-authorized-keys: [] # required!
       shell: '/bin/bash'
       sudo: 'ALL=(ALL) NOPASSWD:ALL'
-      groups: 'adm, audio, cdrom, dialout, floppy, video, plugdev, dip, netdev' # comma separated string!
+      groups: 'adm,audio,cdrom,dialout,floppy,video,plugdev,dip,netdev' # comma separated string!
 
   #
   # ConfigDrive
@@ -192,7 +192,7 @@ libvirt_cloud_config_default_user:
   ssh-authorized-keys: [] # required!
   shell: '/bin/bash'
   sudo: 'ALL=(ALL) NOPASSWD:ALL'
-  groups: 'adm, audio, cdrom, dialout, floppy, video, plugdev, dip, netdev' # comma separated string!
+  groups: 'adm,audio,cdrom,dialout,floppy,video,plugdev,dip,netdev' # comma separated string!
 
 #
 # ConfigDrive
