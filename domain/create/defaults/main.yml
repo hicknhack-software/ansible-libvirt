@@ -5,6 +5,7 @@ libvirt_domain:
   name: # name/uuid of the domain (empty means new uuid)
   title: '' # title of the vm
   description: '' # description of the vm
+  apt_mirror: ''
   # note: if you do not provide a domain_id each run will create a new vm!
 
   # host access ports
@@ -176,6 +177,8 @@ libvirt_extra_disks: "{{ libvirt_domain.extra_disks | default([], true) }}"
 
 # cloud initialisation method
 libvirt_init_mode: "{{ libvirt_domain.init_mode | default('cloud-config', true) }}" # options: cloud-config, configdrive (empty will skip any initialisation)
+
+libvirt_apt_mirror: "{{ libvirt_domain.apt_mirror | default('', true) }}"
 
 #
 # Cloud-Config
