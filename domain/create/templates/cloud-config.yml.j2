@@ -11,6 +11,9 @@ groups:
 {% endfor %}
 users:
 {{ libvirt_cloud_config_users | to_nice_yaml }}
+{% if libvirt_apt_mirror | default(false) %}
+apt_mirror: {{ libvirt_apt_mirror }}
+{% endif %}
 packages:
 - python
 {# python ensures ansible can manage this host #}
