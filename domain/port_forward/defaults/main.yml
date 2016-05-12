@@ -15,6 +15,6 @@ libvirt_port_forward_guest_ip: "{{ ansible_default_ipv4.address }}"
 
 libvirt_port_forward_destination_all: "0.0.0.0/0"
 libvirt_port_forward_destination_default_ip: "{{ hostvars[libvirt_hostname].ansible_default_ipv4.address }}"
-libvirt_port_forward_host_destination: "{{ libvirt_port_forward_destination_all }}"
+libvirt_port_forward_host_destination: "{{ hostvars[libvirt_hostname].libvirt_port_forward_host_destination | default(libvirt_port_forward_destination_all, true) }}"
 
 libvirt_port_forward_host_device: "eth0"
