@@ -35,13 +35,29 @@
   when: item.changed
   with_items: "{{ configure_result.results }}"
 
-- name: add dnsmasq for host
-  lineinfile:
-    dest: "{{ libvirt_qemu_resolv_conf_head }}"
-    regexp: "^nameserver"
-    line: "nameserver {{ (libvirt_bridges | first).ip_address }}"
-  register: nameserver_result
+- when: "{{ ansible_distribution_release == 'xenial' }}"
+  block:
+    - name: add DNS server for host
+      template:
+        src: "resolved.conf.j2"
+        dest: "{{ libvirt_qemu_resolv_conf_systemd }}"
 
-- name: call resolvconf
-  command: "resolvconf -u"
-  when: nameserver_result.changed
+    - name: restart resolved
+      service:
+        name: "systemd-resolved"
+        state: restarted
+        enabled: yes
+
+- when: "{{ not (ansible_distribution_release == 'xenial') }}"
+  block:
+    - name: add dnsmasq for host
+      lineinfile:
+        dest: "{{ libvirt_qemu_resolv_conf_head }}"
+        regexp: "^nameserver"
+        line: "nameserver {{ (libvirt_bridges | first).ip_address }}"
+        create: yes
+      register: nameserver_result
+
+    - name: call resolvconf
+      command: "resolvconf -u"
+      when: nameserver_result.changed

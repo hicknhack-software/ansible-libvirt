@@ -1,2 +1,4 @@
 ---
-libvirt_qemu_resolv_conf_head: '/etc/resolvconf/resolv.conf.d/head'
+libvirt_qemu_resolv_conf_head: "/etc/resolvconf/resolv.conf.d/head"
+
+libvirt_qemu_resolv_conf_systemd: "/etc/systemd/resolved.conf"
