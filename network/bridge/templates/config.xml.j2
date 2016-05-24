@@ -14,7 +14,7 @@
 {% endif %}
   </ip>
 {% if item.ipv6 is defined %}
-  <ip family='ipv6' address='{{ item.ipv6 }}' prefix='{{ ipv6_prefix }}'>
+  <ip family='ipv6' address='{{ item.ipv6 }}' prefix='{{ item.ipv6_prefix }}'>
 {% if item.dhcp6_start is defined %}
     <dhcp>
       <range start='{{ item.dhcp6_start }}' end='{{ item.dhcp6_end }}' />
