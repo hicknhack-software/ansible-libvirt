@@ -42,6 +42,11 @@
   set_fact:
     libvirt_images_ubuntu_cloud_image_sha256: "{{ libvirt_images_ubuntu_cloud_sha256_result.stdout }}"
 
+- name: ensure the image path exists
+  file:
+    path: "{{ libvirt_images_path }}"
+    state: directory
+
 - name: download image disk
   get_url:
     url: "{{ libvirt_images_ubuntu_cloud_image_url }}"
