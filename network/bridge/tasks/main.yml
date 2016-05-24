@@ -1,4 +1,13 @@
 ---
+- name: install packages
+  apt:
+    name: "{{ item }}"
+    update_cache: yes
+    state: latest
+    cache_valid_time: 86400
+  with_items:
+  - resolvconf
+
 - name: create directory
   file:
     path: "{{ libvirt_bridge_path }}"
