@@ -1,4 +1,12 @@
 ---
+- stat:
+    path: "{{ libvirt_base_image }}"
+  register: libvirt_base_image_stat_result
+
+- fail:
+    msg: "base image '{{ libvirt_base_image }}' does not exist"
+  when: not libvirt_base_image_stat_result.stat.exists
+
 - include: domain_id.yml
 - include: ports.yml
 
