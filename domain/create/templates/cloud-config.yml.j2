@@ -17,6 +17,10 @@ apt_mirror: {{ libvirt_apt_mirror }}
 packages:
 - python
 {# python ensures ansible can manage this host #}
+{% if libvirt_cloud_config_bootcmd | default([]) %}
+bootcmd:
+{{ libvirt_cloud_config_bootcmd | to_nice_yaml }}
+{% endif %}
 {# alternative to manage_etc_hosts that allows to specify the full hostname
 bootcmd:
 - [ cloud-init-per, once, configure-hostname, "/bin/sh", "-c", "echo 127.0.1.1 {{ libvirt_result_domain_name }} >> /etc/hosts" ]

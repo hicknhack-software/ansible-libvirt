@@ -73,6 +73,7 @@ libvirt_domain:
       shell: '/bin/bash'
       sudo: 'ALL=(ALL) NOPASSWD:ALL'
       groups: 'adm,audio,cdrom,dialout,floppy,video,plugdev,dip,netdev' # comma separated string!
+    bootcmd: []
 
   #
   # ConfigDrive
@@ -196,6 +197,11 @@ libvirt_cloud_config_default_user:
   shell: '/bin/bash'
   sudo: 'ALL=(ALL) NOPASSWD:ALL'
   groups: 'adm,audio,cdrom,dialout,floppy,video,plugdev,dip,netdev' # comma separated string!
+
+libvirt_cloud_config_bootcmd: "{{ (libvirt_domain.cloud_config | default({}, true)).bootcmd | default([], true) }}"
+
+# example bootcmd that enables dhcp for ipv6 on ubuntu 16.04 guests
+libvirt_cloud_config_ipv6_dhcp_bootcmd: [ cloud-init-per, once, ipv6-dhcp, "/bin/sh", "-c", "echo iface ens2 inet6 dhcp >> /etc/network/interfaces.d/51-cloud-init-ipv6.cfg" ]
 
 #
 # ConfigDrive
