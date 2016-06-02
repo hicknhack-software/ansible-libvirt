@@ -84,8 +84,8 @@ libvirt_domain:
   #
   # all the options intended to show up in the configdrive meta_data.json
   configdrive:
-    meta_data:
-      hostname: '{{ libvirt_result_domain_name }}'
+    meta_data: ''
+      #  hostname: '{{ libvirt_result_domain_name }}'
       #  username: 'Admin'
       #  groups: 'Administrators'  # comma separated string!
       #  inject_user_password: True
