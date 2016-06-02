@@ -73,6 +73,7 @@ libvirt_domain:
       shell: '/bin/bash'
       sudo: 'ALL=(ALL) NOPASSWD:ALL'
       groups: 'adm,audio,cdrom,dialout,floppy,video,plugdev,dip,netdev' # comma separated string!
+    bootcmd: []
 
   #
   # ConfigDrive
@@ -83,8 +84,8 @@ libvirt_domain:
   #
   # all the options intended to show up in the configdrive meta_data.json
   configdrive:
-    meta_data:
-      hostname: '{{ libvirt_result_domain_name }}'
+    meta_data: ''
+      #  hostname: '{{ libvirt_result_domain_name }}'
       #  username: 'Admin'
       #  groups: 'Administrators'  # comma separated string!
       #  inject_user_password: True
@@ -135,9 +136,9 @@ libvirt_domain_description: "{{ libvirt_domain.description | default('', true) }
 #  0 => new port from counter from libvirt_xxx_base_port
 # -1 => no port is forwarded
 # >0 => use this host port
-libvirt_ssh_port: "{{ libvirt_domain.host_ports.ssh | default(0, true) }}" # port forwarded from the host to the VM ssh
-libvirt_rdp_port: "{{ libvirt_domain.host_ports.rdp | default(-1, true) }}" # port forwarded from the host to the VM rdp
-libvirt_winrm_port: "{{ libvirt_domain.host_ports.winrm | default(-1, true) }}" # port forwarded from the host to the VM winrm
+libvirt_ssh_port: "{{ (libvirt_domain.host_ports | default({}, true)).ssh | default(0, true) }}" # port forwarded from the host to the VM ssh
+libvirt_rdp_port: "{{ (libvirt_domain.host_ports | default({}, true)).rdp | default(-1, true) }}" # port forwarded from the host to the VM rdp
+libvirt_winrm_port: "{{ (libvirt_domain.host_ports | default({}, true)).winrm | default(-1, true) }}" # port forwarded from the host to the VM winrm
 
 # default VM configuration
 libvirt_vm_memory: "{{ (libvirt_domain.vm | default({}, true)).memory | default('512MiB', true) }}" # RAM memory available to the VM
@@ -160,8 +161,8 @@ libvirt_install_type: "{{ libvirt_domain.install_type | default('base-image', tr
 # 1. 'base-image'
 # ----------
 # a simple image
-libvirt_base_image: "{{ libvirt_domain.base_image.path | default('', true) }}" # path to the cloud image for the domain
-libvirt_base_image_mode: "{{ libvirt_domain.base_image.mode | default('snapshot', true) }}" # options: snapshot, copy
+libvirt_base_image: "{{ (libvirt_domain.base_image | default({}, true)).path | default('', true) }}" # path to the cloud image for the domain
+libvirt_base_image_mode: "{{ (libvirt_domain.base_image | default({}, true)).mode | default('snapshot', true) }}" # options: snapshot, copy
 
 libvirt_extra_disks: "{{ libvirt_domain.extra_disks | default([], true) }}"
 # - id: 'data-disk' # logical name of the disk (required)
@@ -196,6 +197,11 @@ libvirt_cloud_config_default_user:
   shell: '/bin/bash'
   sudo: 'ALL=(ALL) NOPASSWD:ALL'
   groups: 'adm,audio,cdrom,dialout,floppy,video,plugdev,dip,netdev' # comma separated string!
+
+libvirt_cloud_config_bootcmd: "{{ (libvirt_domain.cloud_config | default({}, true)).bootcmd | default([], true) }}"
+
+# example bootcmd that enables dhcp for ipv6 on ubuntu 16.04 guests
+libvirt_cloud_config_ipv6_dhcp_bootcmd: [ cloud-init-per, once, ipv6-dhcp, "/bin/sh", "-c", "echo iface ens2 inet6 dhcp >> /etc/network/interfaces.d/51-cloud-init-ipv6.cfg" ]
 
 #
 # ConfigDrive
