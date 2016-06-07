@@ -17,12 +17,12 @@ Example Playbook
   sudo_user: root
 
   roles:
-  - hicknhack-software.libvirt/host/provision
-  - hicknhack-software.libvirt/images/ubuntu-cloud
-    libvirt_images_ubuntu_cloud_image_url: "https://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img"
+    - hicknhack-software.libvirt/host/provision
+    - role: hicknhack-software.libvirt/images/ubuntu-cloud
+      libvirt_images_ubuntu_cloud_image_distribution: trusty
 ```
 
 Facts
 -----
 
-* **ansible_local.libvirt.facts.ubuntu_cloud_image_path** the latest cloud_image_path
+* **ansible_local.libvirt.facts.ubuntu_[distribution]_cloud_image_path** the latest cloud_image_path for the [distribution]
