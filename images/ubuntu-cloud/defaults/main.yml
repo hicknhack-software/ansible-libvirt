@@ -1,6 +1,10 @@
 ---
 # Ubuntu Cloud image url
-libvirt_images_ubuntu_cloud_image_url: "https://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img"
+libvirt_images_ubuntu_cloud_image_distribution: trusty
+
+libvirt_images_ubuntu_cloud_image_file: "{{ libvirt_images_ubuntu_cloud_image_distribution }}-server-cloudimg-amd64-disk1.img"
+libvirt_images_ubuntu_cloud_image_url: "https://cloud-images.ubuntu.com/{{ libvirt_images_ubuntu_cloud_image_distribution }}/current/{{ libvirt_images_ubuntu_cloud_image_file }}"
+
 
 # checksums and signatures
 libvirt_images_ubuntu_cloud_url_base: "{{ libvirt_images_ubuntu_cloud_image_url | dirname  }}"
