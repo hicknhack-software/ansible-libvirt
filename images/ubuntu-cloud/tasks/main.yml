@@ -1,4 +1,10 @@
 ---
+- name: Ensure image path exists
+  file:
+    path: "{{ libvirt_images_path }}"
+    state: directory
+    recurse: yes
+
 - name: download sums and signature
   get_url:
     url: "{{ libvirt_images_ubuntu_cloud_url_base }}/{{ item }}"
