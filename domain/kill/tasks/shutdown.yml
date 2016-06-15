@@ -11,7 +11,7 @@
 - name: shutdown
   shell: >
     virsh shutdown "{{ item }}";
-    while virsh list | grep -q -F "{{ item }}"; do
+    while virsh list | grep -q -F " {{ item }} "; do
       sleep 2
     done
   register: libvirt_machine_shutdown_result
