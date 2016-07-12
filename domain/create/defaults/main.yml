@@ -74,6 +74,7 @@ libvirt_domain:
       sudo: 'ALL=(ALL) NOPASSWD:ALL'
       groups: 'adm,audio,cdrom,dialout,floppy,video,plugdev,dip,netdev' # comma separated string!
     bootcmd: []
+    timezone: '' # like Europe/Berlin
 
   #
   # ConfigDrive
@@ -202,6 +203,8 @@ libvirt_cloud_config_bootcmd: "{{ (libvirt_domain.cloud_config | default({}, tru
 
 # example bootcmd that enables dhcp for ipv6 on ubuntu 16.04 guests
 libvirt_cloud_config_ipv6_dhcp_bootcmd: [ cloud-init-per, once, ipv6-dhcp, "/bin/sh", "-c", "echo iface ens2 inet6 dhcp >> /etc/network/interfaces.d/51-cloud-init-ipv6.cfg" ]
+
+libvirt_cloud_config_timezone: "{{ (libvirt_domain.cloud_config | default({}, true)).timezone | default('', true) }}"
 
 #
 # ConfigDrive
