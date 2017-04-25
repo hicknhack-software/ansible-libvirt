@@ -25,6 +25,9 @@ bootcmd:
 bootcmd:
 - [ cloud-init-per, once, configure-hostname, "/bin/sh", "-c", "echo 127.0.1.1 {{ libvirt_result_domain_name }} >> /etc/hosts" ]
 #}
+{% if libvirt_cloud_config_timezone | default('') %}
+timezone: {{ libvirt_cloud_config_timezone }}
+{% endif %}
 {% if libvirt_extra_disks | default(false) %}
 {% set alpha = 'abcdefghijklmnopqrstuvwxyz' %}
 {% set vd_index = 2 %}{# 0 - boot disk, 1 - cloud-config %}{#
