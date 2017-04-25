@@ -232,7 +232,7 @@ libvirt_configdrive_user_data: "{{ (libvirt_domain.configdrive | default({}, tru
 #  #!      => Bash (if installed)
 
 # file structure inside the configdrive
-libvirt_configdrive_files: "{{ (libvirt_domain.configdrive | default({}, true)).extra_files | default([], true) | combine(libvirt_configdrive_base_files) }}"
+libvirt_configdrive_files: "{{ (libvirt_domain.configdrive | default({}, true)).extra_files | default({}, true) | combine(libvirt_configdrive_base_files) }}"
 
 libvirt_configdrive_base_files:
   'openstack/latest/meta_data.json': '{{ libvirt_configdrive_meta_data | to_json }}'

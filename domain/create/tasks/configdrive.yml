@@ -3,13 +3,13 @@
   file:
     path: '{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.configdrive/{{ item.key | dirname }}'
     state: directory
-  with_dict: libvirt_configdrive_files
+  with_dict: '{{ libvirt_configdrive_files }}'
 
 - name: ConfigDrive | content
   copy:
     dest: '{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.configdrive/{{ item.key }}'
     content: '{{ item.value }}'
-  with_dict: libvirt_configdrive_files
+  with_dict: '{{ libvirt_configdrive_files }}'
   register: libvirt_configdrive_result
 
 - name: ConfigDrive | iso image
