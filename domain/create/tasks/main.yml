@@ -1,6 +1,8 @@
 ---
 - stat:
     path: "{{ libvirt_base_image }}"
+    get_checksum: false # Save time on unneeded hashes...
+    get_md5: false
   register: libvirt_base_image_stat_result
 
 - fail:
