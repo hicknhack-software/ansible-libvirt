@@ -74,5 +74,6 @@
           libvirt_result_ssh_port
       }}
     timeout: 60 # seconds
+  become: false
   delegate_to: 127.0.0.1
   when: (libvirt_result_winrm_port | int) <= 0
