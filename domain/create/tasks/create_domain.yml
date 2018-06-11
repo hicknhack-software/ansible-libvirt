@@ -9,3 +9,7 @@
 
 - name: create_domain | start
   command: "virsh start {{ libvirt_result_domain_name }}"
+  notify:
+  - wait for remote ports
+  - check ssh login
+

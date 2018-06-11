@@ -64,16 +64,13 @@
 
 - include: store_facts.yml
 
-- name: wait for ssh
-  wait_for:
-    host: "{{ libvirt_host_ssh_ip_address }}"
-    port: >-
-      {{ libvirt_result_winrm_port
-          if (libvirt_result_winrm_port | int) > 0
-        else
-          libvirt_result_ssh_port
-      }}
-    timeout: 60 # seconds
-  become: false
-  delegate_to: 127.0.0.1
-  when: (libvirt_result_winrm_port | int) <= 0
+- name: queue wait for remote port
+  set_fact:
+    libvirt_wait_hosts: "{{
+      libvirt_wait_hosts | default([]) +
+      [{ 
+        'ip': libvirt_host_ssh_ip_address,
+        'winrm_port': libvirt_result_winrm_port,
+        'ssh_port': libvirt_result_ssh_port
+      }]
+      }}"
