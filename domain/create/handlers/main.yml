@@ -17,18 +17,10 @@
 # wait_for might not be enough for a successful SSH login, probably due to
 # https://stackoverflow.com/questions/30576778/ansible-wait-for-for-connecting-machine-to-actually-login#comment60208811_30576778
 - name: check ssh login
-  command: >
-    ssh 
-    -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
-    -p {{ item.ssh_port }} {{ item.ip }}
-    -l ansible
-    exit
-  register: ssh_test
-  until: ssh_test.rc == 0
-  retries: 12
-  delay:  5
+  setup:
+    retries: 12
+    delay:  5
   changed_when: false
-  when: (item.winrm_port | int) <= 0
   become: false
-  delegate_to: 127.0.0.1
+  delegate_to: "{{ item }}"
   with_items: "{{ libvirt_wait_hosts }}"
