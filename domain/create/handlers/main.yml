@@ -32,3 +32,12 @@
   become: false
   delegate_to: 127.0.0.1
   with_items: "{{ libvirt_wait_hosts }}"
+
+- name: check for dns entry
+  command: host {{ item.name }}
+  register: host_test
+  until: host_test.rc == 0
+  retries: 15
+  delay: 5
+  changed_when: false
+  with_items: "{{ libvirt_wait_hosts }}"

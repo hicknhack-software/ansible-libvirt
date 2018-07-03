@@ -12,4 +12,4 @@
   notify:
   - wait for remote ports
   - check ssh login
-
+  - check for dns entry

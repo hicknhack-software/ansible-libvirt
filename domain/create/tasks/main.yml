@@ -71,6 +71,7 @@
       [{ 
         'ip': libvirt_host_ssh_ip_address,
         'winrm_port': libvirt_result_winrm_port,
-        'ssh_port': libvirt_result_ssh_port
+        'ssh_port': libvirt_result_ssh_port,
+        'name': libvirt_result_domain_name,
       }]
       }}"
