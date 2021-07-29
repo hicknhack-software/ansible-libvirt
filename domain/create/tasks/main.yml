@@ -1,77 +1,97 @@
 ---
-- stat:
+- name: Stat Base Image
+  ansible.builtin.stat:
     path: "{{ libvirt_base_image }}"
     get_checksum: false # Save time on unneeded hashes...
-    get_md5: false
   register: libvirt_base_image_stat_result
 
-- fail:
+- name: Fail if missing Base Image
+  ansible.builtin.fail:
     msg: "base image '{{ libvirt_base_image }}' does not exist"
   when: not libvirt_base_image_stat_result.stat.exists
 
-- include: domain_id.yml
-- include: ports.yml
+- name: Domain Id
+  ansible.builtin.include_tasks: domain_id.yml
+- name: Ports
+  ansible.builtin.include_tasks: ports.yml
 
-- include: extra_disk.yml
-  disk: "{{ item }}"
-  with_items: "{{ libvirt_extra_disks }}"
+- name: Extra Disk
+  ansible.builtin.include_tasks: extra_disk.yml
+  vars:
+    disk: "{{ item }}"
+  loop: "{{ libvirt_extra_disks | list }}"
 
-- include: base_image.yml
+- name: Base Image
+  ansible.builtin.include_tasks: base_image.yml
   when: libvirt_install_type == 'base-image'
 
-- include: cloud_config.yml
+- name: Cloud Config
+  ansible.builtin.include_tasks: cloud_config.yml
   when: libvirt_init_mode == 'cloud-config'
 
-- include: configdrive.yml
+- name: Configdrive
+  ansible.builtin.include_tasks: configdrive.yml
   when: libvirt_init_mode == 'configdrive'
 
-- include: list.yml
+- name: List
+  ansible.builtin.include_tasks: list.yml
   when: libvirt_all_domains is not defined
 
-- include: create_domain.yml
+- name: Create Domain
+  ansible.builtin.include_tasks: create_domain.yml
   when: libvirt_result_domain_name not in libvirt_all_domains
 
-# - include: update.yml
+# - name: Update
+#   ansible.builtin.include_tasks: update.yml
 #   when: libvirt_result_domain_name in libvirt_all_domains
 
-- include: autostart.yml
+- name: Autostart
+  ansible.builtin.include_tasks: autostart.yml
 
-- include: mac_and_ip.yml
+- name: Mac and Ip
+  ansible.builtin.include_tasks: mac_and_ip.yml
 
-- include: port_forward.yml
-  protocol: tcp
-  source_ip: "{{ libvirt_host_ssh_destination }}"
-  source_port: "{{ libvirt_result_ssh_port }}"
-  destination_ip: "{{ libvirt_result_ip_address }}"
-  destination_port: "{{ libvirt_ssh_guest_port }}"
+- name: Port Forward SSH
+  ansible.builtin.include_tasks: port_forward.yml
+  vars:
+    protocol: tcp
+    source_ip: "{{ libvirt_host_ssh_destination }}"
+    source_port: "{{ libvirt_result_ssh_port }}"
+    destination_ip: "{{ libvirt_result_ip_address }}"
+    destination_port: "{{ libvirt_ssh_guest_port }}"
   when: (libvirt_result_ssh_port | int) > 0
 
-- include: port_forward.yml
-  protocol: tcp
-  source_ip: "{{ libvirt_host_ssh_destination }}"
-  source_port: "{{ libvirt_result_rdp_port }}"
-  destination_ip: "{{ libvirt_result_ip_address }}"
-  destination_port: "{{ libvirt_rdp_guest_port }}"
+- name: Port Forward RDP
+  ansible.builtin.include_tasks: port_forward.yml
+  vars:
+    protocol: tcp
+    source_ip: "{{ libvirt_host_ssh_destination }}"
+    source_port: "{{ libvirt_result_rdp_port }}"
+    destination_ip: "{{ libvirt_result_ip_address }}"
+    destination_port: "{{ libvirt_rdp_guest_port }}"
   when: (libvirt_result_rdp_port | int) > 0
 
-- include: port_forward.yml
-  protocol: tcp
-  source_ip: "{{ libvirt_host_ssh_destination }}"
-  source_port: "{{ libvirt_result_winrm_port }}"
-  destination_ip: "{{ libvirt_result_ip_address }}"
-  destination_port: "{{ libvirt_winrm_guest_port }}"
+- name: Port Forward WINRM
+  ansible.builtin.include_tasks: port_forward.yml
+  vars:
+    protocol: tcp
+    source_ip: "{{ libvirt_host_ssh_destination }}"
+    source_port: "{{ libvirt_result_winrm_port }}"
+    destination_ip: "{{ libvirt_result_ip_address }}"
+    destination_port: "{{ libvirt_winrm_guest_port }}"
   when: (libvirt_result_winrm_port | int) > 0
 
-- include: store_facts.yml
+- name: Store Facts
+  ansible.builtin.include_tasks: store_facts.yml
 
-- name: queue wait for remote port
-  set_fact:
-    libvirt_wait_hosts: "{{
-      libvirt_wait_hosts | default([]) +
-      [{ 
-        'ip': libvirt_host_ssh_ip_address,
-        'winrm_port': libvirt_result_winrm_port,
-        'ssh_port': libvirt_result_ssh_port,
-        'name': libvirt_result_domain_name,
-      }]
-      }}"
+- name: Queue wait for remote port
+  ansible.builtin.set_fact:
+    libvirt_wait_hosts: |
+      {{ libvirt_wait_hosts | default([]) + [
+          {
+              'ip': libvirt_host_ssh_ip_address,
+              'winrm_port': libvirt_result_winrm_port,
+              'ssh_port': libvirt_result_ssh_port,
+              'name': libvirt_result_domain_name,
+          }
+      ] }}

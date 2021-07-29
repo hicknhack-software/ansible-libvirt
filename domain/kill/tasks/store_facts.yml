@@ -1,5 +1,6 @@
 ---
-- name: remaining machines
-  template:
+- name: Remaining machines
+  ansible.builtin.template:
     dest: "{{ ansible_facts_path }}/libvirt_domains.fact"
     src: libvirt_domains.j2
+    mode: "644"

@@ -1,0 +1,34 @@
+{
+  "name": "libvirt-ansible-dev",
+  "dockerComposeFile": [
+    "docker-compose.yml"
+  ],
+  "service": "ansible",
+  "overrideCommand": true,
+  "containerUser": "root",
+  "workspaceFolder": "/etc/ansible/roles/hicknhack-software.libvirt",
+  // "capAdd": ["SYS_ADMIN", "SYS_RESOURCE"],
+  // "securityOpt": ["seccomp=unconfined", "label=disable", "apparmor=unconfined"],
+  "updateRemoteUserUID": true,
+  "postStartCommand": ".devcontainer/install_requirements.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "redhat.ansible"
+      ],
+      "settings": {
+        "redhat.telemetry.enabled": false,
+        "ansible.python.interpreterPath": "/bin/python3",
+        "ansible.lightspeed.enabled": false,
+        "ansible.executionEnvironment.enabled": false,
+        "files.associations": {
+          "**/defaults/*.yml": "ansible",
+          "**/handlers/*.yml": "ansible",
+          "**/tasks/*.yml": "ansible",
+          "**/vars/*.yml": "ansible",
+          "**/templates/*.j2": "ansible-jinja"
+        }
+      }
+    }
+  }
+}

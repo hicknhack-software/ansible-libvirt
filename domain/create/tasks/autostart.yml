@@ -1,13 +1,15 @@
 ---
-- name: autostart | list domains
-  command: virsh list --autostart --name
-  changed_when: no
+- name: Autostart | List domains
+  ansible.builtin.command: virsh list --autostart --name
+  changed_when: false
   register: libvirt_list_autostart_result
 
-- name: autostart | enable
-  command: "virsh autostart {{ libvirt_result_domain_name }}"
+- name: Autostart | Enable
+  ansible.builtin.command: "virsh autostart {{ libvirt_result_domain_name }}"
+  changed_when: true
   when: libvirt_autostart and (libvirt_result_domain_name not in libvirt_list_autostart_result.stdout_lines)
 
-- name: autostart | disable
-  command: "virsh autostart {{ libvirt_result_domain_name }} --disable"
+- name: Autostart | Disable
+  ansible.builtin.command: "virsh autostart {{ libvirt_result_domain_name }} --disable"
+  changed_when: true
   when: not libvirt_autostart and (libvirt_result_domain_name in libvirt_list_autostart_result.stdout_lines)

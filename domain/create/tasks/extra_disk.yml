@@ -1,11 +1,11 @@
 ---
-- name: create lvm disk
-  fail:
+- name: Create lvm disk
+  ansible.builtin.fail:
     msg: 'LVM disk creation is not implemented yet!'
   when: (disk.type | default('image', true)) == 'lvm'
 
-- name: create image disk
-  command: >
+- name: Create image disk
+  ansible.builtin.command: >
     qemu-img create
     -f {{ disk.image_type | default('qcow2', true) }}
     {{ libvirt_result_domain_name }}.extra_{{ disk.id }}.img
@@ -13,4 +13,5 @@
   args:
     chdir: "{{ libvirt_images_path }}"
     creates: "{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.extra_{{ disk.id }}.img"
+  changed_when: true
   when: (disk.type | default('image', true)) == 'image'

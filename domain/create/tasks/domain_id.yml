@@ -1,25 +1,25 @@
 ---
-- name: domain_id | check for pollution
-  assert:
+- name: Domain Id | Check for pollution
+  ansible.builtin.assert:
     that: >
       (libvirt_result_domain_name is not defined)
       or (libvirt_domain_name is not defined)
       or (libvirt_domain_name != libvirt_result_domain_name)
   tags:
-  - facts
+    - facts
 
-- name: domain_id | create uuid
-  command: uuidgen
-  changed_when: no
+- name: Domain Id | Create uuid
+  ansible.builtin.command: uuidgen
+  changed_when: false
   register: libvirt_domain_uuid_result
   when: >
     (libvirt_domain_name is not defined)
     or (not libvirt_domain_name)
   tags:
-  - facts
+    - facts
 
-- name: domain_id | extract
-  set_fact:
+- name: Domain Id | Extract
+  ansible.builtin.set_fact:
     libvirt_result_domain_name: >-
       {{
         libvirt_domain_name
@@ -28,4 +28,4 @@
         (libvirt_domain_uuid_result.stdout | trim)
       }}
   tags:
-  - facts
+    - facts

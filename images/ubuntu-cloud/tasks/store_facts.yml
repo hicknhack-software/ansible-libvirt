@@ -1,17 +1,19 @@
 ---
-- name: store_facts | facts directory
-  file:
+- name: Store Facts | Facts directory
+  ansible.builtin.file:
     path: "{{ ansible_facts_path }}"
     state: directory
-    recurse: yes
+    mode: "755"
+    recurse: true
 
-- name: "store_facts | ubuntu_{{ libvirt_images_ubuntu_cloud_image_name }}_cloud_image_path"
-  ini_file:
+- name: "Store Facts | Ubuntu {{ libvirt_images_ubuntu_cloud_image_name }}"
+  community.general.ini_file:
     dest: "{{ ansible_facts_path }}/libvirt.fact"
     section: "facts"
-    option: "ubuntu_{{ libvirt_images_ubuntu_cloud_image_distribution }}_cloud_image_path"
+    option: "ubuntu_{{ libvirt_images_ubuntu_cloud_image_distribution }}_cloud_image_path"
     value: "{{ libvirt_images_path }}/{{ libvirt_images_ubuntu_cloud_image_name }}"
+    mode: "644"
 
-- name: store_facts | re-read
-  setup:
+- name: Store Facts | Re-read
+  ansible.builtin.setup:
     filter: ansible_local

@@ -1,0 +1,21 @@
+name: Ansible Lint
+
+on: push
+
+jobs:
+  ansible-lint:
+    name: "Run Ansible Lint"
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Make Symlink
+        run: >-
+          mkdir -p /home/runner/.ansible/roles
+          && ln -s $(pwd) /home/runner/.ansible/roles/hicknhack-software.libvirt
+
+      - name: Run Ansible Lint
+        uses: ansible/ansible-lint@main
+        with:
+          requirements_file: "requirements.yml"

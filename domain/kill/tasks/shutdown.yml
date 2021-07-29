@@ -1,34 +1,38 @@
 ---
-- name: list running domain names
-  command: virsh list --name
-  changed_when: no
+- name: List running domain names
+  ansible.builtin.command: virsh list --name
+  changed_when: false
   register: libvirt_list_result
 
-- name: extract running domain names
-  set_fact:
+- name: Extract running domain names
+  ansible.builtin.set_fact:
     libvirt_running_domains: "{{ libvirt_list_result.stdout_lines }}"
 
-- name: shutdown
-  shell: >
-    virsh shutdown "{{ item }}";
-    while virsh list | grep -q -F " {{ item }} "; do
-      sleep 2
-    done
+- name: Shutdown
+  ansible.builtin.shell:
+    cmd: >
+      set -o pipefail &&
+      virsh shutdown "{{ item }}";
+      while virsh list | grep -q -F " {{ item }} "; do
+        sleep 2
+      done
+    executable: /bin/bash
   register: libvirt_machine_shutdown_result
   until: libvirt_machine_shutdown_result.rc == 0
+  changed_when: true
   when: item in libvirt_running_domains
-  with_items: "{{ libvirt_domain_names }}"
+  loop: "{{ libvirt_domain_names }}"
 
-# - name: initiate shutdown
-#   command: "virsh shutdown \"{{ item }}\""
+# - name: Initiate shutdown
+#   ansible.builtin.command: "virsh shutdown \"{{ item }}\""
 #   when: item in libvirt_running_domains
-#   with_items: "{{ libvirt_domain_names }}"
+#   loop: "{{ libvirt_domain_names }}"
 
-# - name: wait for shutdown
-#   shell: |
+# - name: Wait for shutdown
+#   ansible.builtin.shell: |
 #     while virsh list | grep -q -F "{{ item }}"; do
 #       sleep 2
 #     done
-#   changed_when: no
+#   changed_when: false
 #   when: item in libvirt_running_domains
-#   with_items: "{{ libvirt_domain_names }}"
+#   loop: "{{ libvirt_domain_names }}"

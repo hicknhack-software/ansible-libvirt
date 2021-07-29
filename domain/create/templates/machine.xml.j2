@@ -1,5 +1,5 @@
 <!-- {{ ansible_managed }} -->
-<domain type='kvm'>
+<domain type="{{ libvirt_domain_type }}">
   <name>{{ libvirt_result_domain_name }}</name>
 {% if libvirt_domain_title %}
   <title>{{ libvirt_domain_title }}</title>

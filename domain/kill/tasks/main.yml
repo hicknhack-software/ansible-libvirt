@@ -1,6 +1,11 @@
 ---
-- include: shutdown.yml
-- include: undefine.yml
-- include: images.yml
-- include: port_forward.yml
-- include: store_facts.yml
+- name: Shutdown
+  ansible.builtin.include_tasks: shutdown.yml
+- name: Undefine
+  ansible.builtin.include_tasks: undefine.yml
+- name: Images
+  ansible.builtin.include_tasks: images.yml
+- name: Port Forward
+  ansible.builtin.include_tasks: port_forward.yml
+- name: Store Facts
+  ansible.builtin.include_tasks: store_facts.yml

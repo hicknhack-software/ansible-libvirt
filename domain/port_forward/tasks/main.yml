@@ -1,53 +1,64 @@
 ---
-- name: facts
-  set_fact:
+- name: Setup libvirt host delegate
+  delegate_to: "{{ libvirt_hostname }}"
+  block:
+    - name: Ensure facts of the backup are available
+      ansible.builtin.setup:
+      delegate_facts: true
+
+- name: Facts
+  ansible.builtin.set_fact:
     libvirt_port_forward_hooks_folder: "{{ libvirt_host_qemu_machine_hooks_folder }}/{{ ansible_hostname }}"
     libvirt_port_forward_tmp_args: "{{ lookup('template', '../templates/port_forward_args.json.j2') }}"
 
-- name: file names
-  set_fact:
+- name: File names
+  ansible.builtin.set_fact:
     libvirt_port_forward_managed_files: "{{ lookup('template', '../templates/file_names.j2') }}"
 
-- delegate_to: "{{ libvirt_hostname }}"
+- name: Run on host
+  delegate_to: "{{ libvirt_hostname }}"
   block:
-    - name: hooks folder
-      file:
+    - name: Hooks folder
+      ansible.builtin.file:
         dest: "{{ libvirt_port_forward_hooks_folder }}"
         state: directory
+        mode: "755"
 
-    - name: hook scripts
-      template:
+    - name: Hook scripts
+      ansible.builtin.template:
         dest: "{{ libvirt_port_forward_hooks_folder }}/{{ libvirt_port_forward_hook_script_name }}"
         src: 'port_forward.sh.j2'
-        mode: 700
-      with_items: "{{ libvirt_port_forward_tmp_args }}"
+        mode: "700"
+      loop: "{{ libvirt_port_forward_tmp_args }}"
       register: libvirt_port_forward_tmp_hook_scripts_result
 
-    - name: list existing hook scripts
-      shell: >
+    - name: List existing hook scripts
+      ansible.builtin.shell: >
         find
         {{ libvirt_port_forward_hooks_folder }}
         -mindepth 1
         -name '{{ manage_name }}_*'
         -type f
         -printf '%P\n'
-      changed_when: no
+      changed_when: false
       register: libvirt_port_forward_tmp_existing_files
 
-    - name: stop unused hook scripts
-      command: "{{ libvirt_port_forward_hooks_folder }}/{{ item }} stopped"
-      ignore_errors: yes
+    - name: Stop unused hook scripts
+      ansible.builtin.command: "{{ libvirt_port_forward_hooks_folder }}/{{ item }} stopped"
+      changed_when: true
+      failed_when: false
       when: item not in libvirt_port_forward_managed_files
-      with_items: "{{ libvirt_port_forward_tmp_existing_files.stdout_lines }}"
+      loop: "{{ libvirt_port_forward_tmp_existing_files.stdout_lines }}"
 
-    - name: remove unused hook scripts
-      file:
+    - name: Remove unused hook scripts
+      ansible.builtin.file:
         dest: "{{ libvirt_port_forward_hooks_folder }}/{{ item }}"
         state: absent
       when: item not in libvirt_port_forward_managed_files
-      with_items: "{{ libvirt_port_forward_tmp_existing_files.stdout_lines }}"
+      loop: "{{ libvirt_port_forward_tmp_existing_files.stdout_lines }}"
 
-    - name: start new hook scripts
-      command: "{{ item.dest }} start"
-      when: item.changed
-      with_items: "{{ libvirt_port_forward_tmp_hook_scripts_result.results }}"
+    - name: Start new hook scripts
+      ansible.builtin.command: "{{ item.dest }} start"
+      when: item.changed and true
+      changed_when: true
+      loop: "{{ libvirt_port_forward_tmp_hook_scripts_result.results }}"

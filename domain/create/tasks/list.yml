@@ -1,13 +1,13 @@
 ---
-- name: list | all domains
-  command: virsh list --all --name
-  changed_when: no
+- name: List | All domains
+  ansible.builtin.command: virsh list --all --name
+  changed_when: false
   register: libvirt_list_all_result
   tags:
-  - facts
+    - facts
 
-- name: list | extract
-  set_fact:
+- name: List | Extract
+  ansible.builtin.set_fact:
     libvirt_all_domains: "{{ libvirt_list_all_result.stdout_lines }}"
   tags:
-  - facts
+    - facts

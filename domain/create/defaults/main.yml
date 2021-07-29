@@ -1,11 +1,12 @@
 ---
 libvirt_domain:
   # basic arguments
+  type: "kvm"
   groups: [] # names of Ansible nodes/groups used to provision the domain
-  name: # name/uuid of the domain (empty means new uuid)
-  title: '' # title of the vm
-  description: '' # description of the vm
-  apt_mirror: ''
+  name: "{{ inventory_hostname }}" # name/uuid of the domain (empty means new uuid)
+  title: "" # title of the vm
+  description: "" # description of the vm
+  apt_mirror: ""
   # note: if you do not provide a domain_id each run will create a new vm!
 
   # host access ports
@@ -21,19 +22,19 @@ libvirt_domain:
   vm:
     memory: "512MiB" # RAM memory available to the VM
     vcpu: 1 # number of cores designated to the VM
-    vcpu_placement: 'static' # options 'auto', 'static', defaults to 'numatune'
+    vcpu_placement: "static" # options 'auto', 'static', defaults to 'numatune'
     vcpu_cpuset: [] # list of host CPU numbers the VM can run on
-    networks: ['default'] # libvirts id of networks this VM is part of
+    networks: ["default"] # libvirts id of networks this VM is part of
     disk_size: "12G" # use this to change first disk size
-    features: ['acpi', 'apic', 'pae'] # vm features available
+    features: ["acpi", "apic", "pae"] # vm features available
 
   # features
-  serial_console: yes # make a console on serial port 0 available
-  vnc: no
-  autostart: yes # should the domain VM start after reboot of the host
+  serial_console: true # make a console on serial port 0 available
+  vnc: false
+  autostart: true # should the domain VM start after reboot of the host
 
   # Valid install_types:
-  install_type: 'base-image' # way to install the VM (this only affects the first run!)
+  install_type: "base-image" # way to install the VM (this only affects the first run!)
 
   #
   # 1. 'base-image'
@@ -41,7 +42,7 @@ libvirt_domain:
   # a simple image
   base_image:
     path: # path to the cloud image for the domain
-    mode: 'snapshot' # options: snapshot, copy
+    mode: "snapshot" # options: snapshot, copy
 
   extra_disks: []
   # - id: 'data-disk' # logical name of the disk (required)
@@ -56,7 +57,7 @@ libvirt_domain:
   #   lvm_group: '' # name of volume group (required)
 
   # cloud initialisation method
-  init_mode: 'cloud-config' # options: cloud-config, configdrive (empty will skip any initialisation)
+  init_mode: "cloud-config" # options: cloud-config, configdrive (empty will skip any initialisation)
 
   #
   # Cloud-Config
@@ -67,14 +68,16 @@ libvirt_domain:
   # see https://bazaar.launchpad.net/~cloud-init-dev/cloud-init/trunk/view/head:/doc/examples/cloud-config-user-groups.txt
   cloud_config:
     users:
-    - name: 'ubuntu'
-      gecos: 'Ubuntu'
-      ssh-authorized-keys: [] # required!
-      shell: '/bin/bash'
-      sudo: 'ALL=(ALL) NOPASSWD:ALL'
-      groups: 'adm,audio,cdrom,dialout,floppy,video,plugdev,dip,netdev' # comma separated string!
+      - name: "ubuntu"
+        gecos: "Ubuntu"
+        ssh_authorized_keys: [] # required!
+        shell: "/bin/bash"
+        sudo: "ALL=(ALL) NOPASSWD:ALL"
+        groups: "adm,audio,cdrom,dialout,floppy,video,plugdev,dip,netdev" # comma separated string!
     bootcmd: []
-    timezone: '' # like Europe/Berlin
+    timezone: "" # like Europe/Berlin
+    packages:
+      - python
 
   #
   # ConfigDrive
@@ -85,7 +88,8 @@ libvirt_domain:
   #
   # all the options intended to show up in the configdrive meta_data.json
   configdrive:
-    meta_data: ''
+    meta_data:
+      ""
       #  hostname: '{{ libvirt_result_domain_name }}'
       #  username: 'Admin'
       #  groups: 'Administrators'  # comma separated string!
@@ -94,15 +98,15 @@ libvirt_domain:
       #  authorized_keys: ...
 
     # content of the user data (skipped if empty)
-    user_data: ''
+    user_data: ""
     # executed for content of first line
     #  #ps1    => Powershell
     #  rem cmd => Cmd/Batch
     #  #!      => Bash (if installed)
 
-    # extra file structure inside the configdrive
-    #extra_files:
-      # filename: text content
+    ## extra file structure inside the configdrive
+    # extra_files:
+    # filename: text content
 
   # libvirt os settings - see: https://libvirt.org/formatdomain.html#elementsOS
   os: "{{ libvirt_os_virtualized_x86_64 }}"
@@ -127,8 +131,9 @@ libvirt_domain:
   #   - 'smx' # feature with default policy 'require'
 
 # basic arguments
+libvirt_domain_type: "{{ libvirt_domain.type | default('kvm', true) }}"
 libvirt_domain_groups: "{{ libvirt_domain.groups | default([], true) }}" # names of Ansible nodes/groups used to provision the domain
-libvirt_domain_name: "{{ libvirt_domain.name | default('', true) }}" # name/uuid of the domain (empty means new uuid)
+libvirt_domain_name: "{{ libvirt_domain.name | default(inventory_hostname, true) }}" # name/uuid of the domain (empty means new uuid)
 libvirt_domain_title: "{{ libvirt_domain.title | default('', true) }}" # title of the vm
 libvirt_domain_description: "{{ libvirt_domain.description | default('', true) }}" # description of the vm
 # note: if you do not provide a domain_id each run will create a new vm!
@@ -144,7 +149,8 @@ libvirt_winrm_port: "{{ (libvirt_domain.host_ports | default({}, true)).winrm | 
 # default VM configuration
 libvirt_vm_memory: "{{ (libvirt_domain.vm | default({}, true)).memory | default('512MiB', true) }}" # RAM memory available to the VM
 libvirt_vm_vcpu: "{{ (libvirt_domain.vm | default({}, true)).vcpu | default('1', true) }}" # number of cores designated to the VM
-libvirt_vm_vcpu_placement: "{{ (libvirt_domain.vm | default({}, true)).vcpu_placement | default('static', true) }}" # options 'auto', 'static', defaults to 'numatune'
+# options 'auto', 'static', defaults to 'numatune'
+libvirt_vm_vcpu_placement: "{{ (libvirt_domain.vm | default({}, true)).vcpu_placement | default('static', true) }}"
 libvirt_vm_vcpu_cpuset: "{{ (libvirt_domain.vm | default({}, true)).vcpu_cpuset | default([], true) }}" # list of host CPU numbers the VM can run on
 libvirt_vm_networks: "{{ (libvirt_domain.vm | default({}, true)).networks | default(['default'], true) }}" # libvirts id of networks this VM is part of
 libvirt_vm_disk_size: "{{ (libvirt_domain.vm | default({}, true)).disk_size | default('12G', true) }}" # use this to change first disk size
@@ -180,7 +186,7 @@ libvirt_extra_disks: "{{ libvirt_domain.extra_disks | default([], true) }}"
 # cloud initialisation method
 libvirt_init_mode: "{{ libvirt_domain.init_mode | default('cloud-config', true) }}" # options: cloud-config, configdrive (empty will skip any initialisation)
 
-libvirt_apt_mirror: "{{ libvirt_domain.apt_mirror | default('', true) }}"
+libvirt_apt_mirror: "{{ libvirt_domain.apt_mirror | default('', true) }}"
 
 #
 # Cloud-Config
@@ -192,19 +198,29 @@ libvirt_apt_mirror: "{{ libvirt_domain.apt_mirror | default('', true) }}"
 libvirt_cloud_config_users: "{{ (libvirt_domain.cloud_config | default({}, true)).users | default([libvirt_cloud_config_default_user], true) }}"
 
 libvirt_cloud_config_default_user:
-  name: 'ubuntu'
-  gecos: 'Ubuntu'
-  ssh-authorized-keys: [] # required!
-  shell: '/bin/bash'
-  sudo: 'ALL=(ALL) NOPASSWD:ALL'
-  groups: 'adm,audio,cdrom,dialout,floppy,video,plugdev,dip,netdev' # comma separated string!
+  name: "ubuntu"
+  gecos: "Ubuntu"
+  ssh_authorized_keys: [] # required!
+  shell: "/bin/bash"
+  sudo: "ALL=(ALL) NOPASSWD:ALL"
+  groups: "adm,audio,cdrom,dialout,floppy,video,plugdev,dip,netdev" # comma separated string!
 
 libvirt_cloud_config_bootcmd: "{{ (libvirt_domain.cloud_config | default({}, true)).bootcmd | default([], true) }}"
 
 # example bootcmd that enables dhcp for ipv6 on ubuntu 16.04 guests
-libvirt_cloud_config_ipv6_dhcp_bootcmd: [ cloud-init-per, once, ipv6-dhcp, "/bin/sh", "-c", "echo iface ens2 inet6 dhcp >> /etc/network/interfaces.d/51-cloud-init-ipv6.cfg" ]
+libvirt_cloud_config_ipv6_dhcp_bootcmd:
+  [
+    cloud-init-per,
+    once,
+    ipv6-dhcp,
+    "/bin/sh",
+    "-c",
+    "echo iface ens2 inet6 dhcp >> /etc/network/interfaces.d/51-cloud-init-ipv6.cfg",
+  ]
 
 libvirt_cloud_config_timezone: "{{ (libvirt_domain.cloud_config | default({}, true)).timezone | default('', true) }}"
+
+libvirt_cloud_config_packages: "{{ (libvirt_domain.cloud_config | default({}, true)).packages | default([], true) | list }}"
 
 #
 # ConfigDrive
@@ -217,7 +233,7 @@ libvirt_cloud_config_timezone: "{{ (libvirt_domain.cloud_config | default({}, tr
 libvirt_configdrive_meta_data: "{{ (libvirt_domain.configdrive | default({}, true)).meta_data | default(libvirt_configdrive_default_meta_data, true) }}"
 
 libvirt_configdrive_default_meta_data:
-  hostname: '{{ libvirt_result_domain_name }}'
+  hostname: "{{ libvirt_result_domain_name }}"
 #  username: 'Admin'
 #  groups: 'Administrators'  # comma separated string!
 #  inject_user_password: True
@@ -235,17 +251,17 @@ libvirt_configdrive_user_data: "{{ (libvirt_domain.configdrive | default({}, tru
 libvirt_configdrive_files: "{{ (libvirt_domain.configdrive | default({}, true)).extra_files | default({}, true) | combine(libvirt_configdrive_base_files) }}"
 
 libvirt_configdrive_base_files:
-  'openstack/latest/meta_data.json': '{{ libvirt_configdrive_meta_data | to_json }}'
-  'openstack/latest/user_data': '{{ libvirt_configdrive_user_data }}'
+  "openstack/latest/meta_data.json": "{{ libvirt_configdrive_meta_data | to_json }}"
+  "openstack/latest/user_data": "{{ libvirt_configdrive_user_data }}"
 
 # libvirt os settings - see: https://libvirt.org/formatdomain.html#elementsOS
 libvirt_os_virtualized_x86_64:
-  type: 'hvm'
-  type_arch: 'x86_64'
+  type: "hvm"
+  type_arch: "x86_64"
 
 libvirt_os_virtualized_x86:
-  type: 'hvm'
-  type_arch: 'i686'
+  type: "hvm"
+  type_arch: "i686"
 
 libvirt_os: "{{ libvirt_domain.os | default(libvirt_os_virtualized_x86_64, true) }}"
 #   type: 'hvm' # options 'hvm'*, 'linux', 'exe'
@@ -257,12 +273,12 @@ libvirt_os: "{{ libvirt_domain.os | default(libvirt_os_virtualized_x86_64, true)
 #
 # use these settings for easily migratable vms (default)
 libvirt_vm_cpu_migratable:
-  match: 'exact' # options 'minimum', 'exact', 'strict'
-  mode: 'custom' # options 'custom', 'host-model', 'host-passthrough'
+  match: "exact" # options 'minimum', 'exact', 'strict'
+  mode: "custom" # options 'custom', 'host-model', 'host-passthrough'
 #
 # use these settings for fast, supports nested virtualisation
 libvirt_vm_cpu_fast:
-  mode: 'host-model' # everything libvirt understands
+  mode: "host-model" # everything libvirt understands
 
 libvirt_vm_cpu: "{{ libvirt_domain.cpu | default(libvirt_vm_cpu_fast, true) }}"
 # more options:
@@ -281,11 +297,11 @@ libvirt_vm_cpu: "{{ libvirt_domain.cpu | default(libvirt_vm_cpu_fast, true) }}"
 # ssh port foward configuration
 libvirt_ssh_base_port: 22000 # first host port for forwards to VM ssh
 libvirt_ssh_guest_port: 22 # guest port for ssh
-libvirt_host_ssh_ip_address: "{{ ansible_default_ipv4.address }}" # host ip address where ssh_ports are made available
+libvirt_host_ssh_ip_address: "{{ libvirt_host_vars.ansible_default_ipv4.address }}" # host ip address where ssh_ports are made available
 libvirt_host_ssh_destination_any: "0.0.0.0/0" # bind to any host ip subnet
 libvirt_host_ssh_destination_ip: "{{ libvirt_host_ssh_ip_address }}" # bind to any host ip subnet
 libvirt_host_ssh_destination: "{{ libvirt_host_ssh_destination_any }}" # ip subnet that is bound by port forwarding
-libvirt_host_accept_all_ports: no # if enabled the firewall is configured to allow all ports of the vm being accessed
+libvirt_host_accept_all_ports: false # if enabled the firewall is configured to allow all ports of the vm being accessed
 
 libvirt_rdp_base_port: 33890 # first host port for forwards to VM rdp
 libvirt_rdp_guest_port: 3389 # guest port for rdp
@@ -296,13 +312,4 @@ libvirt_winrm_guest_port: 5986 # guest port for winrm (no ssl)
 # configuration options
 libvirt_images_path: "/var/lib/libvirt/images" # path on the host, where all the images are stored
 
-# template for the stored facts hash (values are variable/fact names)
-libvirt_domain_fact_template: >-
-  {
-    u"ssh_port": {{ libvirt_result_ssh_port }},
-    u"rdp_port": {{ libvirt_result_rdp_port }},
-    u"winrm_port": {{ libvirt_result_winrm_port }},
-    u"groups": {{ libvirt_domain_groups }}
-  }
-
-ansible_facts_path: '/etc/ansible/facts.d' # path where local Ansible facts are stored & read
+ansible_facts_path: "/etc/ansible/facts.d" # path where local Ansible facts are stored & read

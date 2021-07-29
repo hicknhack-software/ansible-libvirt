@@ -1,0 +1,17 @@
+---
+name: hnh-libvirt
+
+volumes:
+  ansible-colletions:
+
+services:
+  ansible:
+    image: "ghcr.io/ansible/community-ansible-dev-tools:latest"
+    volumes:
+      - ..:/etc/ansible/roles/hicknhack-software.libvirt
+      - ansible-colletions:/root/.ansible/collections
+    working_dir: /etc/ansible/roles/hicknhack-software.libvirt
+    tty: true
+    stdin_open: true
+    environment:
+      - ANSIBLE_HOST_KEY_CHECKING=false

@@ -1,14 +1,15 @@
 ---
-- name: list all domain names
-  command: virsh list --all --name
-  changed_when: no
+- name: List all domain names
+  ansible.builtin.command: virsh list --all --name
+  changed_when: false
   register: libvirt_list_all_result
 
-- name: extract all domain names
-  set_fact:
+- name: Extract all domain names
+  ansible.builtin.set_fact:
     libvirt_all_domains: "{{ libvirt_list_all_result.stdout_lines }}"
 
-- name: undefine machine
-  command: 'virsh undefine "{{ item }}"'
+- name: Undefine machine
+  ansible.builtin.command: 'virsh undefine "{{ item }}"'
   when: item in libvirt_all_domains
-  with_items: "{{ libvirt_domain_names }}"
+  changed_when: true
+  loop: "{{ libvirt_domain_names }}"

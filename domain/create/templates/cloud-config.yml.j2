@@ -15,7 +15,9 @@ users:
 apt_mirror: {{ libvirt_apt_mirror }}
 {% endif %}
 packages:
-- python
+{% for package in libvirt_cloud_config_packages %}
+- {{ package }}
+{% endfor %}
 {# python ensures ansible can manage this host #}
 {% if libvirt_cloud_config_bootcmd | default([]) %}
 bootcmd:
@@ -45,7 +47,7 @@ fs_setup:
   - label: '{{ disk.label | default(disk.id, true) }}'
     filesystem: '{{ disk.fs | default('ext4', true) }}'
     device: '/dev/vd{{ alpha[vd_index] }}'
-    partition: none
+    partition: falsene
     overwrite: False
 {%   set vd_index = vd_index + 1 %}
 {% endfor %}

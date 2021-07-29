@@ -1,15 +1,15 @@
 ---
-- name: running
-  command: virsh list --name
-  changed_when: no
+- name: Running
+  ansible.builtin.command: virsh list --name
+  changed_when: false
   register: virsh_list_running_result
 
-- name: all
-  command: virsh list --all --name
-  changed_when: no
+- name: All
+  ansible.builtin.command: virsh list --all --name
+  changed_when: false
   register: virsh_list_all_result
 
-- name: extract facts
-  set_fact:
+- name: Extract facts
+  ansible.builtin.set_fact:
     libvirt_running_domains: "{{ virsh_list_running_result.stdout_lines }}"
     libvirt_all_domains: "{{ virsh_list_all_result.stdout_lines }}"
