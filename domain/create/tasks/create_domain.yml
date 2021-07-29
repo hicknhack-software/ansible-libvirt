@@ -1,14 +1,14 @@
 ---
 - name: create_domain | template
-  template:
+  ansible.builtin.template:
     dest: "/tmp/{{ libvirt_result_domain_name }}.xml"
     src: "machine.xml.j2"
 
 - name: create_domain | define
-  command: "virsh define /tmp/{{ libvirt_result_domain_name }}.xml"
+  ansible.builtin.command: "virsh define /tmp/{{ libvirt_result_domain_name }}.xml"
 
 - name: create_domain | start
-  command: "virsh start {{ libvirt_result_domain_name }}"
+  ansible.builtin.command: "virsh start {{ libvirt_result_domain_name }}"
   notify:
   - wait for remote ports
   - check ssh login

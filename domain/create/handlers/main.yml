@@ -1,7 +1,7 @@
 ---
 
 - name: wait for remote ports
-  wait_for:
+  ansible.builtin.wait_for:
     host: "{{ item.ip }}"
     port: >-
       {{ item.winrm_port
@@ -12,13 +12,13 @@
     timeout: 360 # seconds
   become: false
   delegate_to: 127.0.0.1
-  with_items: "{{ libvirt_wait_hosts }}"
+  loop: "{{ libvirt_wait_hosts }}"
 
 # wait_for might not be enough for a successful SSH login, probably due to
 # https://stackoverflow.com/questions/30576778/ansible-wait-for-for-connecting-machine-to-actually-login#comment60208811_30576778
 - name: check ssh login
-  command: >
-    ssh 
+  ansible.builtin.command: >
+    ssh
     -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
     -p {{ item.ssh_port }} {{ item.ip }}
     -l ansible
@@ -31,13 +31,13 @@
   when: (item.winrm_port | int) <= 0
   become: false
   delegate_to: 127.0.0.1
-  with_items: "{{ libvirt_wait_hosts }}"
+  loop: "{{ libvirt_wait_hosts }}"
 
 - name: check for dns entry
-  command: host {{ item.name }}
+  ansible.builtin.command: host {{ item.name }}
   register: host_test
   until: host_test.rc == 0
   retries: 15
   delay: 5
   changed_when: false
-  with_items: "{{ libvirt_wait_hosts }}"
+  loop: "{{ libvirt_wait_hosts }}"

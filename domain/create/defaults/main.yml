@@ -2,7 +2,7 @@
 libvirt_domain:
   # basic arguments
   groups: [] # names of Ansible nodes/groups used to provision the domain
-  name: # name/uuid of the domain (empty means new uuid)
+  name: "{{inventory_hostname}}" # name/uuid of the domain (empty means new uuid)
   title: '' # title of the vm
   description: '' # description of the vm
   apt_mirror: ''
@@ -75,6 +75,8 @@ libvirt_domain:
       groups: 'adm,audio,cdrom,dialout,floppy,video,plugdev,dip,netdev' # comma separated string!
     bootcmd: []
     timezone: '' # like Europe/Berlin
+    packages:
+      - python
 
   #
   # ConfigDrive
@@ -128,7 +130,7 @@ libvirt_domain:
 
 # basic arguments
 libvirt_domain_groups: "{{ libvirt_domain.groups | default([], true) }}" # names of Ansible nodes/groups used to provision the domain
-libvirt_domain_name: "{{ libvirt_domain.name | default('', true) }}" # name/uuid of the domain (empty means new uuid)
+libvirt_domain_name: "{{ libvirt_domain.name | default(inventory_hostname, true) }}" # name/uuid of the domain (empty means new uuid)
 libvirt_domain_title: "{{ libvirt_domain.title | default('', true) }}" # title of the vm
 libvirt_domain_description: "{{ libvirt_domain.description | default('', true) }}" # description of the vm
 # note: if you do not provide a domain_id each run will create a new vm!
@@ -206,6 +208,8 @@ libvirt_cloud_config_ipv6_dhcp_bootcmd: [ cloud-init-per, once, ipv6-dhcp, "/bin
 
 libvirt_cloud_config_timezone: "{{ (libvirt_domain.cloud_config | default({}, true)).timezone | default('', true) }}"
 
+libvirt_cloud_config_packages: "{{ (libvirt_domain.cloud_config | default({}, true)).packages | default([], true) | list }}"
+
 #
 # ConfigDrive
 # ===========
@@ -281,7 +285,7 @@ libvirt_vm_cpu: "{{ libvirt_domain.cpu | default(libvirt_vm_cpu_fast, true) }}"
 # ssh port foward configuration
 libvirt_ssh_base_port: 22000 # first host port for forwards to VM ssh
 libvirt_ssh_guest_port: 22 # guest port for ssh
-libvirt_host_ssh_ip_address: "{{ ansible_default_ipv4.address }}" # host ip address where ssh_ports are made available
+libvirt_host_ssh_ip_address: "{{ libvirt_host_vars.ansible_default_ipv4.address }}" # host ip address where ssh_ports are made available
 libvirt_host_ssh_destination_any: "0.0.0.0/0" # bind to any host ip subnet
 libvirt_host_ssh_destination_ip: "{{ libvirt_host_ssh_ip_address }}" # bind to any host ip subnet
 libvirt_host_ssh_destination: "{{ libvirt_host_ssh_destination_any }}" # ip subnet that is bound by port forwarding
@@ -295,14 +299,5 @@ libvirt_winrm_guest_port: 5986 # guest port for winrm (no ssl)
 
 # configuration options
 libvirt_images_path: "/var/lib/libvirt/images" # path on the host, where all the images are stored
-
-# template for the stored facts hash (values are variable/fact names)
-libvirt_domain_fact_template: >-
-  {
-    u"ssh_port": {{ libvirt_result_ssh_port }},
-    u"rdp_port": {{ libvirt_result_rdp_port }},
-    u"winrm_port": {{ libvirt_result_winrm_port }},
-    u"groups": {{ libvirt_domain_groups }}
-  }
 
 ansible_facts_path: '/etc/ansible/facts.d' # path where local Ansible facts are stored & read

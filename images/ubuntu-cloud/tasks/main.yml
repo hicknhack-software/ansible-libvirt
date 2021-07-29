@@ -1,22 +1,22 @@
 ---
 - name: Ensure image path exists
-  file:
+  ansible.builtin.file:
     path: "{{ libvirt_images_path }}"
     state: directory
     recurse: yes
 
 - name: download sums and signature
-  get_url:
+  ansible.builtin.get_url:
     url: "{{ libvirt_images_ubuntu_cloud_url_base }}/{{ item }}"
     dest: "{{ libvirt_images_ubuntu_cloud_tmp_folder }}/{{ item }}"
     force: yes
   changed_when: no
-  with_flattened:
-  - "{{ libvirt_images_ubuntu_cloud_sha256sums }}"
-  - "{{ libvirt_images_ubuntu_cloud_sha256sums_gpg }}"
+  loop:
+    - "{{ libvirt_images_ubuntu_cloud_sha256sums }}"
+    - "{{ libvirt_images_ubuntu_cloud_sha256sums_gpg }}"
 
 - name: check GPG keys
-  command: >
+  ansible.builtin.command: >
     gpg
     --list-keys {{ libvirt_images_ubuntu_cloud_gpg_keys }}
   failed_when: no
@@ -24,14 +24,14 @@
   register: libvirt_images_ubuntu_cloud_gpg_result
 
 - name: import GPG key
-  command: >
+  ansible.builtin.command: >
     gpg
     --keyserver {{ libvirt_images_ubuntu_cloud_gpg_key_server }}
     --recv-keys {{ libvirt_images_ubuntu_cloud_gpg_keys }}
   when: libvirt_images_ubuntu_cloud_gpg_result.rc != 0
 
 - name: check and extract signature
-  shell: >
+  ansible.builtin.shell: >
     gpg
     --verify {{ libvirt_images_ubuntu_cloud_sha256sums_gpg }}
     {{ libvirt_images_ubuntu_cloud_sha256sums }}
@@ -45,24 +45,24 @@
   register: libvirt_images_ubuntu_cloud_sha256_result
 
 - name: store sha256sum
-  set_fact:
+  ansible.builtin.set_fact:
     libvirt_images_ubuntu_cloud_image_sha256: "{{ libvirt_images_ubuntu_cloud_sha256_result.stdout }}"
 
 - name: download image disk
-  get_url:
+  ansible.builtin.get_url:
     url: "{{ libvirt_images_ubuntu_cloud_image_url }}"
-    sha256sum: "{{ libvirt_images_ubuntu_cloud_image_sha256 }}"
+    checksum: "sha256:{{ libvirt_images_ubuntu_cloud_image_sha256 }}"
     dest: "{{ libvirt_images_path }}/{{ libvirt_images_ubuntu_cloud_image_dist }}"
   register: libvirt_images_ubuntu_cloud_download_result
 
 - name: remove modified image
-  file:
+  ansible.builtin.file:
     path: "{{ libvirt_images_path }}/{{ libvirt_images_ubuntu_cloud_image_name }}"
     state: absent
   when: libvirt_images_ubuntu_cloud_download_result.changed
 
 - name: convert the image
-  command: "qemu-img convert -O qcow2 {{ libvirt_images_ubuntu_cloud_image_dist }} {{ libvirt_images_ubuntu_cloud_image_name }}"
+  ansible.builtin.command: "qemu-img convert -O qcow2 {{ libvirt_images_ubuntu_cloud_image_dist }} {{ libvirt_images_ubuntu_cloud_image_name }}"
   args:
     chdir: "{{ libvirt_images_path }}"
     creates: "{{ libvirt_images_path }}/{{ libvirt_images_ubuntu_cloud_image_name }}"

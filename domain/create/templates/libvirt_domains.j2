@@ -1,6 +1,0 @@
-{
-{% for x in dict([[libvirt_result_domain_name, libvirt_domain_fact_template]]
-              + ((ansible_local | default({})).libvirt_domains | default({})).items()) | dictsort %}
-{{ x[0] | to_nice_json }}:{{ x[1] | to_nice_json }}{{ '' if loop.last else ',' }}
-{% endfor %}
-}

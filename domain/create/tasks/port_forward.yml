@@ -1,11 +1,11 @@
 ---
 - name: port_forward | directory
-  file:
+  ansible.builtin.file:
     dest: "{{ libvirt_host_qemu_machine_hooks_folder }}/{{ libvirt_result_domain_name }}"
     state: directory
 
 - name: port_forward | name
-  set_fact:
+  ansible.builtin.set_fact:
     libvirt_tmp_port_forward_hook_script: >-
       {{
         [ libvirt_host_qemu_machine_hooks_folder,
@@ -20,12 +20,12 @@
       }}
 
 - name: port_forward | create
-  template:
+  ansible.builtin.template:
     dest: "{{ libvirt_tmp_port_forward_hook_script }}"
     src: iptables-port-nat.sh.j2
     mode: "0744"
   register: port_forward_result
 
 - name: port_forward | run
-  command: "{{ libvirt_tmp_port_forward_hook_script }} start"
+  ansible.builtin.command: "{{ libvirt_tmp_port_forward_hook_script }} start"
   when: port_forward_result.changed

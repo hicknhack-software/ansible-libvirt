@@ -1,12 +1,12 @@
 ---
 - name: cloud_config | create
-  template:
+  ansible.builtin.template:
     dest: "{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.cloud-config"
     src: "cloud-config.yml.j2"
   register: libvirt_create_cloud_config_result
 
 - name: cloud_config | create image
-  command: >
+  ansible.builtin.command: >
     cloud-localds
     {{ libvirt_result_domain_name }}.cloud-config.img
     {{ libvirt_result_domain_name }}.cloud-config

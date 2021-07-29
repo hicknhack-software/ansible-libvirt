@@ -1,74 +1,78 @@
 ---
-- stat:
+- ansible.builtin.stat:
     path: "{{ libvirt_base_image }}"
     get_checksum: false # Save time on unneeded hashes...
     get_md5: false
   register: libvirt_base_image_stat_result
 
-- fail:
+- ansible.builtin.fail:
     msg: "base image '{{ libvirt_base_image }}' does not exist"
   when: not libvirt_base_image_stat_result.stat.exists
 
-- include: domain_id.yml
-- include: ports.yml
+- include_tasks: domain_id.yml
+- include_tasks: ports.yml
 
-- include: extra_disk.yml
-  disk: "{{ item }}"
-  with_items: "{{ libvirt_extra_disks }}"
+- include_tasks: extra_disk.yml
+  vars:
+    disk: "{{ item }}"
+  loop: "{{ libvirt_extra_disks | list }}"
 
-- include: base_image.yml
+- include_tasks: base_image.yml
   when: libvirt_install_type == 'base-image'
 
-- include: cloud_config.yml
+- include_tasks: cloud_config.yml
   when: libvirt_init_mode == 'cloud-config'
 
-- include: configdrive.yml
+- include_tasks: configdrive.yml
   when: libvirt_init_mode == 'configdrive'
 
-- include: list.yml
+- include_tasks: list.yml
   when: libvirt_all_domains is not defined
 
-- include: create_domain.yml
+- include_tasks: create_domain.yml
   when: libvirt_result_domain_name not in libvirt_all_domains
 
-# - include: update.yml
+# - include_tasks: update.yml
 #   when: libvirt_result_domain_name in libvirt_all_domains
 
-- include: autostart.yml
+- include_tasks: autostart.yml
 
 - include: mac_and_ip.yml
 
-- include: port_forward.yml
-  protocol: tcp
-  source_ip: "{{ libvirt_host_ssh_destination }}"
-  source_port: "{{ libvirt_result_ssh_port }}"
-  destination_ip: "{{ libvirt_result_ip_address }}"
-  destination_port: "{{ libvirt_ssh_guest_port }}"
+- include_tasks: port_forward.yml
+  vars:
+    protocol: tcp
+    source_ip: "{{ libvirt_host_ssh_destination }}"
+    source_port: "{{ libvirt_result_ssh_port }}"
+    destination_ip: "{{ libvirt_result_ip_address }}"
+    destination_port: "{{ libvirt_ssh_guest_port }}"
   when: (libvirt_result_ssh_port | int) > 0
 
-- include: port_forward.yml
-  protocol: tcp
-  source_ip: "{{ libvirt_host_ssh_destination }}"
-  source_port: "{{ libvirt_result_rdp_port }}"
-  destination_ip: "{{ libvirt_result_ip_address }}"
-  destination_port: "{{ libvirt_rdp_guest_port }}"
+- include_tasks: port_forward.yml
+  vars:
+    protocol: tcp
+    source_ip: "{{ libvirt_host_ssh_destination }}"
+    source_port: "{{ libvirt_result_rdp_port }}"
+    destination_ip: "{{ libvirt_result_ip_address }}"
+    destination_port: "{{ libvirt_rdp_guest_port }}"
   when: (libvirt_result_rdp_port | int) > 0
 
-- include: port_forward.yml
-  protocol: tcp
-  source_ip: "{{ libvirt_host_ssh_destination }}"
-  source_port: "{{ libvirt_result_winrm_port }}"
-  destination_ip: "{{ libvirt_result_ip_address }}"
-  destination_port: "{{ libvirt_winrm_guest_port }}"
+- include_tasks: port_forward.yml
+  vars:
+    protocol: tcp
+    source_ip: "{{ libvirt_host_ssh_destination }}"
+    source_port: "{{ libvirt_result_winrm_port }}"
+    destination_ip: "{{ libvirt_result_ip_address }}"
+    destination_port: "{{ libvirt_winrm_guest_port }}"
   when: (libvirt_result_winrm_port | int) > 0
 
-- include: store_facts.yml
+- include_tasks: store_facts.yml
 
 - name: queue wait for remote port
-  set_fact:
+  ansible.builtin.set_fact:
     libvirt_wait_hosts: "{{
       libvirt_wait_hosts | default([]) +
-      [{ 
+      [{
         'ip': libvirt_host_ssh_ip_address,
         'winrm_port': libvirt_result_winrm_port,
         'ssh_port': libvirt_result_ssh_port,

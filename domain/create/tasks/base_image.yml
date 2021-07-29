@@ -1,6 +1,6 @@
 ---
 - name: base_image | copy
-  command: >
+  ansible.builtin.command: >
     cp
     {{ libvirt_base_image }}
     {{ libvirt_result_domain_name }}.img
@@ -11,7 +11,7 @@
   when: libvirt_base_image_mode == 'copy'
 
 - name: base_image | snapshot
-  command: >
+  ansible.builtin.command: >
     qemu-img create
     -f qcow2
     -b {{ libvirt_base_image }}
@@ -23,7 +23,7 @@
   when: libvirt_base_image_mode == 'snapshot'
 
 - name: base_image | resize
-  command: >
+  ansible.builtin.command: >
     qemu-img resize
     {{ libvirt_result_domain_name }}.img
     {{ libvirt_vm_disk_size }}

@@ -1,19 +1,18 @@
 ---
 - name: install packages
-  apt:
-    name: "{{ item }}"
+  ansible.builtin.apt:
+    pkg: "{{ libvirt_host_packages | list }}"
     update_cache: yes
     state: latest
     cache_valid_time: 86400
-  with_items: "{{ libvirt_host_packages }}"
 
 - name: machine hooks folder
-  file:
+  ansible.builtin.file:
     dest: "{{ libvirt_host_qemu_machine_hooks_folder }}"
     state: directory
 
 - name: qemu hook
-  template:
+  ansible.builtin.template:
     dest: "{{ libvirt_host_qemu_hook }}"
     src: "qemu_hook.j2"
     mode: 700
@@ -21,12 +20,12 @@
     - restart libvirt
 
 - name: increase semaphore count
-  template:
+  ansible.builtin.template:
     dest: "/etc/sysctl.d/local.conf"
     src: "sysctl_local.conf.j2"
 
 - name: disable audit
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "/etc/libvirt/libvirtd.conf"
     regexp: "^audit_level"
     line: "audit_level = 0"
@@ -34,7 +33,12 @@
     - restart libvirt
 
 - name: network hook
-  template:
+  ansible.builtin.template:
     dest: "{{ network_interface_up_hooks_path }}/libvirt"
     src: "if_up_libvirt.sh.j2"
     mode: 700
+  register: libvirt_provision_network_hook_result
+
+- name: initially run network hook
+  ansible.builtin.shell: "{{ network_interface_up_hooks_path }}/libvirt"
+  when: libvirt_provision_network_hook_result.changed

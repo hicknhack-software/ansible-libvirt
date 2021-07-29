@@ -15,7 +15,9 @@ users:
 apt_mirror: {{ libvirt_apt_mirror }}
 {% endif %}
 packages:
-- python
+{% for package in libvirt_cloud_config_packages %}
+- {{ package }}
+{% endfor %}
 {# python ensures ansible can manage this host #}
 {% if libvirt_cloud_config_bootcmd | default([]) %}
 bootcmd:

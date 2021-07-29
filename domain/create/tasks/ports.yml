@@ -1,6 +1,6 @@
 ---
 - name: ports | ssh
-  set_fact:
+  ansible.builtin.set_fact:
     libvirt_result_ssh_port_generated: >-
       {{
         False
@@ -31,7 +31,7 @@
   - facts
 
 - name: ports | rdp
-  set_fact:
+  ansible.builtin.set_fact:
     libvirt_result_rdp_port_generated: >-
       {{
         False
@@ -62,7 +62,7 @@
   - facts
 
 - name: ports | winrm
-  set_fact:
+  ansible.builtin.set_fact:
     libvirt_result_winrm_port_generated: >-
       {{
         False

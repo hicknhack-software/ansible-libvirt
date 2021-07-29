@@ -1,19 +1,19 @@
 ---
 - name: ConfigDrive | directories
-  file:
+  ansible.builtin.file:
     path: '{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.configdrive/{{ item.key | dirname }}'
     state: directory
-  with_dict: '{{ libvirt_configdrive_files }}'
+  loop: '{{ libvirt_configdrive_files | dict2items }}'
 
 - name: ConfigDrive | content
-  copy:
+  ansible.builtin.copy:
     dest: '{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.configdrive/{{ item.key }}'
     content: '{{ item.value }}'
-  with_dict: '{{ libvirt_configdrive_files }}'
+  loop: '{{ libvirt_configdrive_files | dict2items }}'
   register: libvirt_configdrive_result
 
 - name: ConfigDrive | iso image
-  command: >
+  ansible.builtin.command: >
     genisoimage -joliet -rock -volid config-2
     -o {{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.configdrive.iso
     -r {{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.configdrive
