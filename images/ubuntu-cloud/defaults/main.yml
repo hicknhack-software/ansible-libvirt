@@ -13,7 +13,7 @@ libvirt_images_ubuntu_cloud_sha256sums_gpg: "SHA256SUMS.gpg" # used to verify ch
 
 # pgp data used to verify integrity of the gpg file
 libvirt_images_ubuntu_cloud_gpg_key_server: "hkp://keyserver.ubuntu.com"
-libvirt_images_ubuntu_cloud_gpg_keys: "D2EB44626FDDC30B513D5BB71A5D6C4C7DB87C81"
+libvirt_images_ubuntu_cloud_gpg_keys: "0x476CF100"
 
 # name of the image downloaded
 libvirt_images_ubuntu_cloud_image_dist: "{{ libvirt_images_ubuntu_cloud_image_url | basename }}.dist"
