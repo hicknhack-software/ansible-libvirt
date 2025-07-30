@@ -13,7 +13,13 @@ libvirt_images_ubuntu_cloud_sha256sums: "SHA256SUMS" # used to verify image down
 libvirt_images_ubuntu_cloud_sha256sums_gpg: "SHA256SUMS.gpg" # used to verify checksums
 
 # pgp data used to verify integrity of the gpg file
-libvirt_images_ubuntu_cloud_gpg_key_server: "hkp://keyserver.ubuntu.com"
+libvirt_images_ubuntu_cloud_gpg_key_servers:
+  - hkp://keyserver.ubuntu.com
+  - hkp://keyserver.ubuntu.com:80
+  - ha.pool.sks-keyservers.net
+  - hkp://p80.pool.sks-keyservers.net:80
+  - pgp.mit.edu
+  - keyserver.pgp.com
 libvirt_images_ubuntu_cloud_gpg_keys: "D2EB44626FDDC30B513D5BB71A5D6C4C7DB87C81"
 
 # name of the image downloaded

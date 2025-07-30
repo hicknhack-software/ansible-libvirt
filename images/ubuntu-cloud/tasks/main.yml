@@ -27,10 +27,15 @@
 - name: Import GPG key
   ansible.builtin.command: >
     gpg
-    --keyserver {{ libvirt_images_ubuntu_cloud_gpg_key_server }}
+    --keyserver {{ item }}
     --recv-keys {{ libvirt_images_ubuntu_cloud_gpg_keys }}
+  register: libvirt_images_ubuntu_cloud_gpg_add_result
+  ignore_errors: true
   changed_when: true
   when: libvirt_images_ubuntu_cloud_gpg_result.rc != 0
+  loop: "{{ libvirt_images_ubuntu_cloud_gpg_key_servers | list }}"
+  loop_control:
+    break_when: libvirt_images_ubuntu_cloud_gpg_add_result.rc == 0
 
 - name: Check and extract signature
   ansible.builtin.shell:
