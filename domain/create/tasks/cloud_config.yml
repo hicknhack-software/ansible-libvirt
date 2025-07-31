@@ -6,12 +6,22 @@
     mode: "644"
   register: libvirt_create_cloud_config_result
 
+- name: Cloud Config | Create
+  ansible.builtin.copy:
+    dest: "{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.meta-data"
+    content: |
+      instance-id: {{ libvirt_result_domain_name }}
+      local-hostname: {{ libvirt_result_domain_name }}
+    mode: "644"
+  register: libvirt_create_meta_data_result
+
 - name: Cloud Config | Create image
   ansible.builtin.command: >
     cloud-localds
     {{ libvirt_result_domain_name }}.cloud-config.img
     {{ libvirt_result_domain_name }}.cloud-config
+    {{ libvirt_result_domain_name }}.meta-data
   args:
     chdir: "{{ libvirt_images_path }}"
   changed_when: true
-  when: libvirt_create_cloud_config_result.changed and true
+  when: libvirt_create_cloud_config_result.changed or libvirt_create_meta_data_result.changed
