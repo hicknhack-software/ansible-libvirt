@@ -85,6 +85,7 @@
         content: |
           [Resolve]
           DNS={{ (libvirt_bridges | first).ip_address }}
+          Domains={{ (libvirt_bridges | first).domain | default('', true) }}
         dest: "{{ libvirt_systemd_resolved_d_dir }}/qemu_dnsmasq.conf"
         mode: "644"
       register: nameserver_result

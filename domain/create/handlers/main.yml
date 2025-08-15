@@ -16,12 +16,14 @@
 # wait_for might not be enough for a successful SSH login, probably due to
 # https://stackoverflow.com/questions/30576778/ansible-wait-for-for-connecting-machine-to-actually-login#comment60208811_30576778
 - name: Check ssh login
-  ansible.builtin.command: >
-    ssh
-    -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
-    -p {{ item.ssh_port }} {{ item.ip }}
-    -l ansible
-    -- sudo netplan apply
+  ansible.builtin.command:
+    cmd: >
+      ssh
+      -o StrictHostKeyChecking=no
+      -o UserKnownHostsFile=/dev/null
+      -p {{ item.ssh_port }} {{ item.ip }}
+      -l {{ libvirt_ssh_login }}
+      -- sudo netplan apply
   register: ssh_test
   until: ssh_test.rc == 0
   retries: 12
@@ -33,7 +35,8 @@
   loop: "{{ libvirt_wait_hosts }}"
 
 - name: Check for dns entry
-  ansible.builtin.command: host {{ item.name }}
+  ansible.builtin.command:
+    cmd: host -t A {{ item.name }}
   register: host_test
   until: host_test.rc == 0
   retries: 15

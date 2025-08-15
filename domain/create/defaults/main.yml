@@ -147,14 +147,15 @@ libvirt_rdp_port: "{{ (libvirt_domain.host_ports | default({}, true)).rdp | defa
 libvirt_winrm_port: "{{ (libvirt_domain.host_ports | default({}, true)).winrm | default(-1, true) }}" # port forwarded from the host to the VM winrm
 
 # default VM configuration
-libvirt_vm_memory: "{{ (libvirt_domain.vm | default({}, true)).memory | default('512MiB', true) }}" # RAM memory available to the VM
-libvirt_vm_vcpu: "{{ (libvirt_domain.vm | default({}, true)).vcpu | default('1', true) }}" # number of cores designated to the VM
+libvirt_vm: "{{ (libvirt_domain.vm | default({}, true)) }}"
+libvirt_vm_memory: "{{ libvirt_vm.memory | default('512MiB', true) }}" # RAM memory available to the VM
+libvirt_vm_vcpu: "{{ libvirt_vm.vcpu | default('1', true) }}" # number of cores designated to the VM
 # options 'auto', 'static', defaults to 'numatune'
-libvirt_vm_vcpu_placement: "{{ (libvirt_domain.vm | default({}, true)).vcpu_placement | default('static', true) }}"
-libvirt_vm_vcpu_cpuset: "{{ (libvirt_domain.vm | default({}, true)).vcpu_cpuset | default([], true) }}" # list of host CPU numbers the VM can run on
-libvirt_vm_networks: "{{ (libvirt_domain.vm | default({}, true)).networks | default(['default'], true) }}" # libvirts id of networks this VM is part of
-libvirt_vm_disk_size: "{{ (libvirt_domain.vm | default({}, true)).disk_size | default('12G', true) }}" # use this to change first disk size
-libvirt_vm_features: "{{ (libvirt_domain.vm | default({}, true)).features | default(['acpi', 'apic', 'pae'], true) }}" # vm features available
+libvirt_vm_vcpu_placement: "{{ libvirt_vm.vcpu_placement | default('static', true) }}"
+libvirt_vm_vcpu_cpuset: "{{ libvirt_vm.vcpu_cpuset | default([], true) }}" # list of host CPU numbers the VM can run on
+libvirt_vm_networks: "{{ libvirt_vm.networks | default(['default'], true) }}" # libvirts id of networks this VM is part of
+libvirt_vm_disk_size: "{{ libvirt_vm.disk_size | default('12G', true) }}" # use this to change first disk size
+libvirt_vm_features: "{{ libvirt_vm.features | default(['acpi', 'apic', 'pae'], true) }}" # vm features available
 
 # features
 libvirt_vm_serial_console: "{{ libvirt_domain.serial_console | default(true, true) }}" # make a console on serial port 0 available
@@ -296,6 +297,7 @@ libvirt_vm_cpu: "{{ libvirt_domain.cpu | default(libvirt_vm_cpu_fast, true) }}"
 
 # ssh port foward configuration
 libvirt_ssh_base_port: 22000 # first host port for forwards to VM ssh
+libvirt_ssh_login: "ansible"
 libvirt_ssh_guest_port: 22 # guest port for ssh
 libvirt_host_ssh_ip_address: "{{ libvirt_host_vars.ansible_default_ipv4.address }}" # host ip address where ssh_ports are made available
 libvirt_host_ssh_destination_any: "0.0.0.0/0" # bind to any host ip subnet
