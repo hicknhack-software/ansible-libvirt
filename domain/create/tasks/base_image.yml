@@ -1,35 +1,27 @@
 ---
 - name: Base Image | Copy
-  ansible.builtin.command: >
-    cp
-    {{ libvirt_base_image }}
-    {{ libvirt_result_domain_name }}.img
-  args:
+  ansible.builtin.command:
+    cmd: cp {{ libvirt_base_image }} {{ libvirt_result_domain_name }}/base.img
     chdir: "{{ libvirt_images_path }}"
-    creates: "{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.img"
+    creates: "{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}/base.img"
   register: libvirt_copy_image_result
   when: libvirt_base_image_mode == 'copy'
 
 - name: Base Image | Snapshot
-  ansible.builtin.command: >
-    qemu-img create
-    -f qcow2
-    -b {{ libvirt_base_image }}
-    -F qcow2
-    {{ libvirt_result_domain_name }}.img
-  args:
+  ansible.builtin.command:
+    cmd: >
+      qemu-img create
+      -f qcow2 -b {{ libvirt_base_image }}
+      -F qcow2 {{ libvirt_result_domain_name }}/base.img
     chdir: "{{ libvirt_images_path }}"
-    creates: "{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.img"
+    creates: "{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}/base.img"
   register: libvirt_snapshot_image_result
   when: libvirt_base_image_mode == 'snapshot'
 
 - name: Base Image | Resize
-  ansible.builtin.command: >
-    qemu-img resize
-    {{ libvirt_result_domain_name }}.img
-    {{ libvirt_vm_disk_size }}
-  args:
-    chdir: "{{ libvirt_images_path }}"
+  ansible.builtin.command:
+    cmd: qemu-img resize base.img {{ libvirt_vm_disk_size }}
+    chdir: "{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}"
   changed_when: true
   when: (libvirt_vm_disk_size is defined)
     and (libvirt_copy_image_result.changed or libvirt_snapshot_image_result.changed)

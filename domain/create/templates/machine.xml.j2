@@ -48,20 +48,20 @@
 {% set vd_index = 0 %}
     <disk type='file' device='disk'>
       <driver type='qcow2' cache='writeback'/>
-      <source file='{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.img'/>
+      <source file='{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}/base.img'/>
       <target dev='vd{{ alpha[vd_index] }}' bus='virtio'/>
     </disk>
 {% set vd_index = vd_index + 1 %}
 {% if libvirt_init_mode == 'cloud-config' %}
     <disk type='file' device='disk'>
-      <source file='{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.cloud-config.img'/>
+      <source file='{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}/cloud-config.img'/>
       <target dev='vd{{ alpha[vd_index] }}' bus='virtio'/>
     </disk>
 {%   set vd_index = vd_index + 1 %}
 {% endif %}
 {% if libvirt_init_mode == 'configdrive' %}
     <disk type='file' device='cdrom'>
-      <source file='{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.configdrive.iso'/>
+      <source file='{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}/configdrive.iso'/>
       <target dev='hda' bus='ide'/>
     </disk>
 {% endif %}
@@ -69,7 +69,7 @@
 {%   if (disk.type | default('image')) == 'image' %}
     <disk type='file' device='disk'>
       <driver type='{{ disk.image_type | default('qcow2', true) }}' cache='writeback'/>
-      <source file='{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.extra_{{ disk.id }}.img'/>
+      <source file='{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}/extra_{{ disk.id }}.img'/>
       <target dev='vd{{ alpha[vd_index] }}' bus='virtio'/>
     </disk>
 {%     set vd_index = vd_index + 1 %}

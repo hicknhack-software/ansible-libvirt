@@ -15,6 +15,12 @@
 - name: Ports
   ansible.builtin.include_tasks: ports.yml
 
+- name: Domain folders
+  ansible.builtin.file:
+    path: "{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}"
+    state: directory
+    mode: "755"
+
 - name: Extra Disk
   ansible.builtin.include_tasks: extra_disk.yml
   vars:

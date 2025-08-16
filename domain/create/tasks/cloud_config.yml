@@ -1,14 +1,14 @@
 ---
 - name: Cloud Config | Create
   ansible.builtin.template:
-    dest: "{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.cloud-config"
+    dest: "{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}/cloud-config.yml"
     src: "cloud-config.yml.j2"
     mode: "644"
   register: libvirt_create_cloud_config_result
 
-- name: Cloud Config | Create
+- name: Cloud Config | Meta Data
   ansible.builtin.copy:
-    dest: "{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.meta-data"
+    dest: "{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}/meta-data.ini"
     content: |
       instance-id: {{ libvirt_result_domain_name }}
       local-hostname: {{ libvirt_result_domain_name }}
@@ -16,12 +16,8 @@
   register: libvirt_create_meta_data_result
 
 - name: Cloud Config | Create image
-  ansible.builtin.command: >
-    cloud-localds
-    {{ libvirt_result_domain_name }}.cloud-config.img
-    {{ libvirt_result_domain_name }}.cloud-config
-    {{ libvirt_result_domain_name }}.meta-data
-  args:
-    chdir: "{{ libvirt_images_path }}"
+  ansible.builtin.command:
+    cmd: cloud-localds cloud-config.img cloud-config.yml meta-data.ini
+    chdir: "{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}"
   changed_when: true
   when: libvirt_create_cloud_config_result.changed or libvirt_create_meta_data_result.changed

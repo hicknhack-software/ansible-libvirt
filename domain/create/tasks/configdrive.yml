@@ -1,23 +1,22 @@
 ---
 - name: ConfigDrive | directories
   ansible.builtin.file:
-    path: '{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.configdrive/{{ item.key | dirname }}'
+    path: '{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}/configdrive/{{ item.key | dirname }}'
     state: directory
     mode: "755"
   loop: '{{ libvirt_configdrive_files | dict2items }}'
 
 - name: ConfigDrive | content
   ansible.builtin.copy:
-    dest: '{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.configdrive/{{ item.key }}'
+    dest: '{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}/configdrive/{{ item.key }}'
     content: '{{ item.value }}'
     mode: "644"
   loop: '{{ libvirt_configdrive_files | dict2items }}'
   register: libvirt_configdrive_result
 
 - name: ConfigDrive | iso image
-  ansible.builtin.command: >
-    genisoimage -joliet -rock -volid config-2
-    -o {{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.configdrive.iso
-    -r {{ libvirt_images_path }}/{{ libvirt_result_domain_name }}.configdrive
+  ansible.builtin.command:
+    cmd: genisoimage -joliet -rock -volid config-2 -o configdrive.iso -r configdrive
+    chdir: "{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}"
   changed_when: true
   when: libvirt_configdrive_result.changed and true

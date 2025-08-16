@@ -46,20 +46,19 @@ disk_setup:
 {%   for disk in libvirt_extra_disks %}
   /dev/vd{{ alpha[vd_index] }}:
     table_type: mbr
-    layout: True
-    overwrite: False
+    layout: true
+    overwrite: false
 {%     set vd_index = vd_index + 1 %}
 {%   endfor %}
 #}
-{% set vd_index = 2 %}{# 0 - boot disk, 1 - cloud-config #}
-{#
+{%   set vd_index = 2 %}{# 0 - boot disk, 1 - cloud-config #}
 fs_setup:
 {%   for disk in libvirt_extra_disks %}
 - label: '{{ disk.label | default(disk.id, true) }}'
   filesystem: '{{ disk.fs | default('ext4', true) }}'
   device: '/dev/vd{{ alpha[vd_index] }}'
-  partition: falsene
-  overwrite: False
+  partition: none
+  overwrite: false
 {%     set vd_index = vd_index + 1 %}
 {%   endfor %}
 {%   set vd_index = 2 %}{# 0 - boot disk, 1 - cloud-config #}
@@ -68,5 +67,4 @@ mounts:
 - [ 'vd{{ alpha[vd_index] }}', '{{ disk.mount_path | default('/data') }}', 'auto', '{{ disk.mount_opts | default('defaults,noatime,nodev') }}' ]
 {%     set vd_index = vd_index + 1 %}
 {%   endfor %}
-#}
 {% endif %}
