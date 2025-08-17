@@ -54,7 +54,7 @@ disk_setup:
 {%   set vd_index = 2 %}{# 0 - boot disk, 1 - cloud-config #}
 fs_setup:
 {%   for disk in libvirt_extra_disks %}
-- label: '{{ disk.label | default(disk.id, true) }}'
+- label: '{{ disk.label | default(disk.id | default('data', true), true) }}'
   filesystem: '{{ disk.fs | default('ext4', true) }}'
   device: '/dev/vd{{ alpha[vd_index] }}'
   partition: none
@@ -64,7 +64,7 @@ fs_setup:
 {%   set vd_index = 2 %}{# 0 - boot disk, 1 - cloud-config #}
 mounts:
 {%   for disk in libvirt_extra_disks %}
-- [ 'vd{{ alpha[vd_index] }}', '{{ disk.mount_path | default('/data') }}', 'auto', '{{ disk.mount_opts | default('defaults,noatime,nodev') }}' ]
+- [ 'vd{{ alpha[vd_index] }}', '{{ disk.mount_path | default('/data', true) }}', 'auto', '{{ disk.mount_opts | default('defaults,noatime,nodev') }}' ]
 {%     set vd_index = vd_index + 1 %}
 {%   endfor %}
 {% endif %}

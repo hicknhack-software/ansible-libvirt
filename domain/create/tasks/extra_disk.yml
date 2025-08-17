@@ -8,9 +8,9 @@
   ansible.builtin.command: >
     qemu-img create
     -f {{ disk.image_type | default('qcow2', true) }}
-    extra_{{ disk.id }}.img
+    extra_{{ disk.id | default('data', true) }}.img
     {{ disk.size }}
   args:
     chdir: "{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}"
-    creates: "{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}/extra_{{ disk.id }}.img"
+    creates: "{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}/extra_{{ disk.id | default('data', true) }}.img"
   when: (disk.type | default('image', true)) == 'image'

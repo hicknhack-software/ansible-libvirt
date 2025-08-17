@@ -69,14 +69,14 @@
 {%   if (disk.type | default('image')) == 'image' %}
     <disk type='file' device='disk'>
       <driver type='{{ disk.image_type | default('qcow2', true) }}' cache='writeback'/>
-      <source file='{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}/extra_{{ disk.id }}.img'/>
+      <source file='{{ libvirt_images_path }}/{{ libvirt_result_domain_name }}/extra_{{ disk.id | default('data', true) }}.img'/>
       <target dev='vd{{ alpha[vd_index] }}' bus='virtio'/>
     </disk>
 {%     set vd_index = vd_index + 1 %}
 {%   elif (disk.type | default('image')) == 'lvm' %}
     <disk type='block' device='disk'>
       <driver name='qemu' type='raw'/>
-      <source dev='/dev/{{ disk.lvm_group }}/{{ disk.id }}'/>
+      <source dev='/dev/{{ disk.lvm_group }}/{{ disk.id | default(libvirt_result_domain_name + '_vd' + alpha[vd_index], true) }}'/>
       <target dev='vd{{ alpha[vd_index] }}' bus='virtio'/>
     </disk>
 {%     set vd_index = vd_index + 1 %}
