@@ -1,7 +1,7 @@
 ---
 - name: Delete Images
-  ansible.builtin.shell: 'rm -rf {{ item }}.*'
+  ansible.builtin.shell: 'rm -rf {{ item }}/'
   args:
     chdir: "{{ libvirt_images_path }}"
-    removes: "{{ libvirt_images_path }}/{{ item }}.img"
+    removes: "{{ libvirt_images_path }}/{{ item }}/"
   loop: "{{ libvirt_domain_names }}"
