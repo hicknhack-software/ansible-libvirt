@@ -6,6 +6,8 @@ libvirt_host_packages:
   - python3-libvirt # allow ansible management
   - cloud-image-utils # used to convert images
   - uuid-runtime # generate machine uuids
+  - net-tools # arp to inspect booted ips
+  - dnsutils # host utility to check dns entries
   # - python-configparser # required for ini_file
 
 libvirt_network_device: eth0
