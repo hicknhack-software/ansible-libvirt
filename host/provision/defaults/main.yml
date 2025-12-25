@@ -11,5 +11,7 @@ libvirt_host_packages:
   # - python-configparser # required for ini_file
 
 libvirt_network_device: eth0
-network_up_hooks:
+libvirt_network_up_hooks:
   - 'echo 1 > /proc/sys/net/ipv4/conf/{{ libvirt_network_device }}/proxy_arp'
+
+libvirt_kernel_semaphore_settings: "1024 128000 32 8192"

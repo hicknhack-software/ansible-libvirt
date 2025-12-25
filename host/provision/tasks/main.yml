@@ -20,10 +20,23 @@
   notify: Restart libvirt
 
 - name: Increase semaphore count
-  ansible.builtin.template:
-    dest: "/etc/sysctl.d/local.conf"
-    src: "sysctl_local.conf.j2"
-    mode: "644"
+  ansible.posix.sysctl:
+    name: "kernel.sem"
+    value: "{{ libvirt_kernel_semaphore_settings }}"
+    sysctl_file: "/etc/sysctl.d/local.conf"
+    state: "{{ 'present' if libvirt_kernel_semaphore_settings != '' else 'absent' }}"
+
+# note: distros/libvirt changed default to disable bridge filtering
+# - now a vm cannot access the public ip of the host with forwarded ports
+- name: Enable bridge netfilter kernel module
+  community.general.modprobe:
+    name: "br_netfilter"
+
+- name: Enable netfilter for outgoing bridge traffic
+  ansible.posix.sysctl:
+    name: "net.bridge.bridge-nf-call-iptables"
+    value: "1"
+    sysctl_file: "/etc/sysctl.d/bridge-nf.conf"
 
 - name: Disable audit
   ansible.builtin.lineinfile:
@@ -33,13 +46,18 @@
   notify: Restart libvirt
 
 - name: Network hook
-  ansible.builtin.template:
-    dest: "{{ network_interface_up_hooks_path }}/libvirt"
-    src: "if_up_libvirt.sh.j2"
+  ansible.builtin.copy:
+    content: |
+      #!/bin/bash
+      # {{ ansible_managed }}
+      {% for line in libvirt_network_up_hooks -%}
+      {{ line }}
+      {% endfor -%}
+    dest: "{{ libvirt_network_interface_up_hooks_path }}/libvirt"
     mode: "700"
   register: libvirt_provision_network_hook_result
 
 - name: Initially run network hook
-  ansible.builtin.command: "{{ network_interface_up_hooks_path }}/libvirt"
+  ansible.builtin.command: "{{ libvirt_network_interface_up_hooks_path }}/libvirt"
   changed_when: true
   when: libvirt_provision_network_hook_result.changed and true
