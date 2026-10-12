@@ -1,0 +1,35 @@
+#!/bin/sh
+# {{ ansible_managed }}
+
+set -eu
+
+network_name=${1:-}
+operation=${2:-}
+sub_operation=${3:-}
+
+# Add the rule after the libvirt network is up. The Ansible role also invokes
+# this hook directly so already-running networks are covered on first install.
+[ "$operation" = 'started' ] || exit 0
+[ "$sub_operation" = 'begin' ] || exit 0
+
+iptables_bin={{ libvirt_bridge_iptables_binary | quote }}
+
+case "$network_name" in
+{% for bridge in libvirt_bridges %}
+{% if (bridge.forward | default('nat')) == 'nat' %}
+  {{ bridge.name | quote }})
+    network_subnet={{ (bridge.ip_address ~ '/' ~ bridge.ip_netmask) | quote }}
+    if ! "$iptables_bin" -w -t nat -C POSTROUTING \
+        -s "$network_subnet" -d "$network_subnet" \
+        -m conntrack --ctstate DNAT -j MASQUERADE 2>/dev/null; then
+      "$iptables_bin" -w -t nat -I POSTROUTING 1 \
+          -s "$network_subnet" -d "$network_subnet" \
+          -m conntrack --ctstate DNAT -j MASQUERADE
+    fi
+    ;;
+{% endif %}
+{% endfor %}
+  *)
+    exit 0
+    ;;
+esac

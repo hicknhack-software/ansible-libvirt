@@ -3,14 +3,24 @@
   ansible.builtin.apt:
     pkg:
       - resolvconf
+      - iptables
     update_cache: true
     state: latest
     cache_valid_time: 86400
 
-- name: Create directory
+- name: Create directories
   ansible.builtin.file:
-    path: "{{ libvirt_bridge_path }}"
+    path: "{{ item }}"
     state: directory
+    mode: "755"
+  loop:
+    - "{{ libvirt_bridge_path }}"
+    - "{{ libvirt_bridge_hooks_dir }}"
+
+- name: Install hairpin NAT network hook
+  ansible.builtin.template:
+    src: network_hook.sh.j2
+    dest: "{{ libvirt_bridge_network_hook }}"
     mode: "755"
 
 - name: Create config
@@ -45,6 +55,20 @@
   when: item.changed and true
 
   loop: "{{ configure_result.results | flatten(levels=1) }}"
+
+- name: Ensure hairpin NAT rules are present for configured NAT networks
+  ansible.builtin.command:
+    argv:
+      - "{{ libvirt_bridge_network_hook }}"
+      - "{{ item.name }}"
+      - started
+      - begin
+      - '-'
+  loop: "{{ libvirt_bridges }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: (item.forward | default('nat')) == 'nat'
+  changed_when: false
 
 - name: Check for Openresolv config
   ansible.builtin.stat:

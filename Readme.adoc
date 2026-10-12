@@ -13,8 +13,8 @@ Content Roles
 -------------
 
 * host/provision - install everything required on the host
-* images/ubuntu-cloud - download and prepare a Ubuntu cloud images (default: Trusty 14.04)
-* network/bridge - configure a libvirt network for nat bridge mode
+* images/ubuntu-cloud - download and prepare a Ubuntu cloud images (default: Ubuntu 24.04)
+* network/bridge - configure a network for NAT bridge mode
 * domain/create - create and start a new virtual machine
 * domain/list - list virtual machines
 * domain/kill - stop and undefine a virtual machine

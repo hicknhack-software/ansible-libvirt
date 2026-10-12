@@ -1,5 +1,8 @@
 ---
 libvirt_bridge_path: '/etc/libvirt/ansible/networks'
+libvirt_bridge_hooks_dir: '/etc/libvirt/hooks/network.d'
+libvirt_bridge_network_hook: "{{ libvirt_bridge_hooks_dir }}/50-hairpin-nat"
+libvirt_bridge_iptables_binary: '/usr/sbin/iptables'
 
 libvirt_bridges:
   - name: default
